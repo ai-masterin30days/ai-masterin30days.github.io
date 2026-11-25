@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>고르는 화면 6개 · ai_masterin30days</title>
+<meta name="description" content="바텀시트, 드롭다운, 칩, 세그먼트, 슬라이더, 선택 카드. 고르는 화면도 상황마다 달라요. 이름으로 말하면 AI가 딱 맞게 만들어요.">
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="../assets/logo-bubble.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../assets/guide.css">
+<style>
+  /* ---- Page-specific live demos (choose) ---- */
+  .pill-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 99px; padding: 10px 14px; font: 700 13.5px/1 var(--ko); transition: transform .25s var(--spring), background .3s var(--ease), color .3s; }
+  .pill-btn:active { transform: scale(.94); }
+  .pill-btn svg { width: 14px; height: 14px; flex: none; }
+  @keyframes bpop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+  /* 1 Bottom sheet: rises from below, the pick re-sorts the list */
+  .screen.bs { min-height: 352px; }
+  .bs-bar { display: flex; gap: 6px; margin-bottom: 8px; }
+  .bs-sort { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--plum); border-radius: 99px; padding: 7px 10px 7px 12px; font: 700 12.5px/1 var(--ko); }
+  .bs-sort svg { width: 12px; height: 12px; }
+  .bs-bar > span { display: inline-flex; align-items: center; border-radius: 99px; padding: 7px 11px; font: 600 12.5px/1 var(--ko); background: var(--cream); color: var(--mute); }
+  .bs-list { list-style: none; position: relative; }
+  .bs-list li { display: flex; align-items: center; gap: 11px; padding: 8px 0; border-top: 1px solid var(--line); background: var(--white); }
+  .bs-list li:first-child { border-top: 0; }
+  .bs-list .th { flex: none; width: 46px; height: 46px; border-radius: 12px; overflow: hidden; }
+  .bs-list .th svg { width: 100%; height: 100%; }
+  .bs-list b { display: block; font: 700 13.5px/1.2 var(--ko); }
+  .bs-list small { display: block; margin-top: 4px; font: 500 12px/1 var(--ko); color: var(--mute); }
+  .bs-list .pr { margin-left: auto; font: 700 13.5px/1 var(--ko); font-variant-numeric: tabular-nums; }
+  .bs-scrim { position: absolute; inset: 0; background: #2B141659; opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 2; }
+  .bs-sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; background: var(--white); border-radius: 22px 22px 0 0; padding: 8px 14px 14px; box-shadow: 0 -12px 30px -16px #2B141699; transform: translateY(105%); transition: transform .5s var(--spring); visibility: hidden; }
+  .bs.open .bs-scrim { opacity: 1; pointer-events: auto; }
+  .bs.open .bs-sheet { transform: none; visibility: visible; }
+  .bs-sheet .grab { width: 36px; height: 4px; border-radius: 99px; background: #2B141633; margin: 0 auto 10px; }
+  .bs-sheet h4 { font: 700 15px/1.2 var(--ko); margin-bottom: 6px; }
+  .bs-sheet h4 small { margin-left: 6px; font: 500 12px/1 var(--ko); color: var(--mute); }
+  .bs-sheet [role=radio] { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 11px 4px; border-top: 1px solid var(--line); font: 700 14px/1 var(--ko); text-align: left; }
+  .bs-sheet [role=radio]:first-of-type { border-top: 0; }
+  .bs-sheet [role=radio] i { width: 20px; height: 20px; border-radius: 50%; border: 1.8px solid #2B141666; display: grid; place-items: center; transition: border-color .2s, background .2s; }
+  .bs-sheet [role=radio] i::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--white); transform: scale(0); transition: transform .35s var(--spring); }
+  .bs-sheet [role=radio][aria-checked="true"] i { border-color: var(--violet); background: var(--violet); }
+  .bs-sheet [role=radio][aria-checked="true"] i::after { transform: scale(1); }
+
+  /* 2 Dropdown: unfolds, one pick fills the field */
+  .screen.dd { min-height: 336px; }
+  .dd-l { display: block; font: 700 13px/1 var(--ko); color: var(--mute); margin-bottom: 7px; }
+  .dd-wrap { position: relative; }
+  .dd-trig { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 13px; font: 600 14.5px/1.2 var(--ko); color: #2B141680; text-align: left; transition: border-color .3s, color .3s, background .3s; }
+  .dd-trig svg { width: 16px; height: 16px; flex: none; color: var(--plum); transition: transform .45s var(--spring); }
+  .dd-trig[aria-expanded="true"] { border: 2px solid var(--plum); padding: 11.5px 12.5px; }
+  .dd-trig[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .dd.has .dd-trig { color: var(--plum); border-color: var(--plum); }
+  .dd-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 3; background: var(--white); border-radius: 14px; padding: 5px; box-shadow: 0 20px 40px -16px #2B141699, 0 0 0 1px var(--line); opacity: 0; transform: translateY(-8px) scaleY(.85); transform-origin: 50% 0; transition: opacity .2s, transform .45s var(--spring); pointer-events: none; }
+  .dd-list.on { opacity: 1; transform: none; pointer-events: auto; }
+  .dd-list [role=option] { width: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 10px; padding: 11px 10px; font: 600 14px/1.2 var(--ko); text-align: left; transition: background .2s; }
+  .dd-list [role=option]:hover { background: var(--cream); }
+  .dd-list [role=option] svg { width: 15px; height: 15px; opacity: 0; transform: scale(.4); transition: opacity .2s, transform .35s var(--spring); }
+  .dd-list [role=option][aria-selected="true"] { background: var(--butter); font-weight: 700; }
+  .dd-list [role=option][aria-selected="true"] svg { opacity: 1; transform: none; }
+  .dd-help { display: flex; align-items: center; gap: 6px; margin-top: 7px; min-height: 18px; font: 700 12.5px/1.3 var(--ko); opacity: 0; transform: translateY(-4px); transition: opacity .3s, transform .4s var(--spring); }
+  .dd-help i { flex: none; width: 17px; height: 17px; border-radius: 50%; background: var(--sage); display: grid; place-items: center; }
+  .dd-help i svg { width: 10px; height: 10px; }
+  .dd.has .dd-help { opacity: 1; transform: none; }
+  .dd-memo { margin-top: 12px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 13px; font: 500 14px/1.2 var(--ko); color: #2B141666; }
+  .dd-save { margin-top: 14px; width: 100%; padding: 13px; font-size: 14px; background: var(--cream); color: #2B141673; }
+  .dd.has .dd-save { background: var(--plum); color: var(--white); }
+
+  /* 3 Chips: several picks, results filter live */
+  .ch-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ch-chips button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--line); border-radius: 99px; padding: 7px 11px; font: 700 13px/1 var(--ko); transition: background .3s var(--ease), color .3s, border-color .3s, transform .3s var(--spring); }
+  .ch-chips button:active { transform: scale(.92); }
+  .ch-chips button svg { width: 0; height: 12px; transition: width .3s var(--spring); }
+  .ch-chips button[aria-pressed="true"] { background: var(--plum); border-color: var(--plum); color: var(--white); }
+  .ch-chips button[aria-pressed="true"] svg { width: 12px; }
+  .ch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; min-height: 196px; align-content: start; }
+  .ch-grid figure { border-radius: 14px; background: var(--cream); padding: 6px 6px 8px; text-align: center; animation: bpop .45s var(--spring) both; }
+  .ch-grid figure[hidden] { display: none; }
+  .ch-grid svg { width: 100%; height: auto; border-radius: 10px; }
+  .ch-grid figcaption { margin-top: 6px; font: 700 12px/1.2 var(--ko); }
+  .ch-empty { grid-column: 1 / -1; padding: 30px 8px; text-align: center; font: 600 13px/1.5 var(--ko); color: var(--mute); }
+  .ch-count { font-variant-numeric: tabular-nums; }
+
+  /* 4 Segmented control: same data, three views, each with its own colour */
+  .sg-seg { display: flex; position: relative; background: var(--cream); border-radius: 12px; padding: 3px; }
+  .sg-seg button { flex: 1; position: relative; z-index: 1; padding: 9px 0; font: 700 13.5px/1 var(--ko); color: var(--mute); transition: color .3s; }
+  .sg-seg button[aria-pressed="true"] { color: var(--plum); }
+  .sg-seg .ind { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); border-radius: 9px; background: var(--white); box-shadow: 0 3px 10px -4px #2B141659; transition: transform .45s var(--spring); }
+  .sg-big { margin-top: 16px; }
+  .sg-big small { font: 600 12.5px/1 var(--ko); color: var(--mute); }
+  .sg-big b { display: block; margin-top: 6px; font: 600 38px/1 var(--disp); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .sg-big b span { font: 700 14px/1 var(--ko); margin-left: 4px; letter-spacing: -0.02em; }
+  .sg-chart { display: flex; align-items: flex-end; gap: 6px; height: 112px; margin-top: 14px; padding: 10px 10px 0; border-radius: 14px; transition: background .45s var(--ease); }
+  .sg-chart i { flex: 1; border-radius: 7px 7px 3px 3px; background: var(--plum); transition: height .6s var(--spring), background .45s; transform-origin: bottom; }
+  .sg-chart i.hi { background: var(--violet); }
+  .sg-x { display: flex; gap: 6px; padding: 6px 10px 0; font: 600 11px/1 var(--ko); color: var(--mute); }
+  .sg-x span { flex: 1; text-align: center; }
+  .sg.v0 .sg-chart { background: #D9D0F780; } .sg.v1 .sg-chart { background: #DDE78E80; } .sg.v2 .sg-chart { background: #F3E7A8A6; }
+
+  /* 5 Slider: two thumbs set the range, the histogram and the result follow */
+  .sl-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .sl-head span { font: 700 13px/1 var(--ko); color: var(--mute); }
+  .sl-head b { font: 700 15px/1 var(--ko); font-variant-numeric: tabular-nums; }
+  .sl-hist { display: flex; align-items: flex-end; gap: 3px; height: 76px; margin-top: 16px; padding: 0 11px; }
+  .sl-hist i { flex: 1; border-radius: 4px 4px 1px 1px; background: #2B14161F; transition: background .25s; }
+  .sl-hist i.in { background: var(--violet); }
+  .sl-range { position: relative; height: 30px; margin-top: -2px; }
+  .sl-range .track { position: absolute; left: 11px; right: 11px; top: 13px; height: 4px; border-radius: 99px; background: #2B14161F; }
+  .sl-range .fill { position: absolute; top: 13px; height: 4px; border-radius: 99px; background: var(--plum); }
+  .sl-range input { position: absolute; left: 0; top: 0; width: 100%; height: 30px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+  .sl-range input::-webkit-slider-runnable-track { background: none; height: 30px; }
+  .sl-range input::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 26px; height: 26px; margin-top: 2px; border-radius: 50%; background: var(--white); border: 2.5px solid var(--plum); box-shadow: 0 3px 8px #2B141640; cursor: grab; transition: transform .3s var(--spring); }
+  .sl-range input:active::-webkit-slider-thumb { transform: scale(1.18); }
+  .sl-range input::-moz-range-track { background: none; }
+  .sl-range input::-moz-range-thumb { pointer-events: auto; width: 21px; height: 21px; border-radius: 50%; background: var(--white); border: 2.5px solid var(--plum); box-shadow: 0 3px 8px #2B141640; cursor: grab; }
+  .sl-range input:focus-visible { outline: none; }
+  .sl-range input:focus-visible::-webkit-slider-thumb { outline: 2.5px solid var(--violet); outline-offset: 2px; }
+  .sl-range input:focus-visible::-moz-range-thumb { outline: 2.5px solid var(--violet); outline-offset: 2px; }
+  .sl-ends { display: flex; justify-content: space-between; padding: 0 2px; font: 600 11px/1 var(--ko); color: var(--mute); }
+  .sl-go { margin-top: 14px; width: 100%; padding: 13px; font-size: 14px; background: var(--plum); color: var(--white); }
+  .sl-go .n { display: inline-block; font-variant-numeric: tabular-nums; }
+  .sl-go .n.bump { animation: bpop .35s var(--spring); }
+
+  /* 6 Selectable cards: the chosen card turns violet, the button follows */
+  .sc h4 { font: 700 16px/1.2 var(--ko); margin-bottom: 10px; }
+  .sc-list { display: grid; gap: 8px; }
+  .sc-list [role=radio] { width: 100%; display: flex; align-items: center; gap: 11px; text-align: left; border: 1.5px solid var(--line); border-radius: 16px; padding: 11px 12px; transition: background .35s var(--ease), color .35s, border-color .35s, transform .4s var(--spring); }
+  .sc-list [role=radio]:active { transform: scale(.97); }
+  .sc-list .g { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; transition: background .35s; }
+  .sc-list .g svg { width: 24px; height: 24px; }
+  .sc-list .tx { flex: 1; }
+  .sc-list b { display: block; font: 700 14px/1.2 var(--ko); }
+  .sc-list small { display: block; margin-top: 3px; font: 500 12px/1.2 var(--ko); color: var(--mute); transition: color .35s; }
+  .sc-list .rd { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #2B141666; display: grid; place-items: center; transition: border-color .3s, background .3s; }
+  .sc-list .rd svg { width: 12px; height: 12px; transform: scale(0); transition: transform .4s var(--spring); }
+  .sc-list [aria-checked="true"] { background: var(--violet); border-color: var(--violet); color: var(--white); transform: scale(1.02); }
+  .sc-list [aria-checked="true"] small { color: #FFFFFFD9; }
+  .sc-list [aria-checked="true"] .g { background: var(--white) !important; }
+  .sc-list [aria-checked="true"] .rd { border-color: var(--white); background: var(--white); }
+  .sc-list [aria-checked="true"] .rd svg { transform: none; }
+  .sc-go { margin-top: 12px; width: 100%; padding: 13px; font-size: 14px; background: var(--plum); color: var(--white); }
+  .sc-go span { display: inline-block; }
+  .sc-go span.swap { animation: bpop .4s var(--spring); }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="brand"><img src="../assets/logo-bubble.svg" alt="">ai_masterin30days<span>무료 가이드</span></div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="eyebrow"><i></i>UI × AI 가이드</span>
+    <h1 class="disp">Dropdown?<span class="in">Or <span class="v">chips</span>?<span class="kr">선택</span></span></h1>
+    <p class="lead">고르는 화면, 전부 드롭다운이면 불편해요.<br>
+      하나, 여러 개, 범위… 고르는 방식이 다 달라요.<br>
+      <b>상황에 맞는 이름을 말하면 AI가 딱 맞게 만들어요.</b></p>
+    <nav class="fan" aria-label="6개 바로 가기">
+      <a class="chip" href="#bottom-sheet"><span class="g"><svg width="24" height="30" viewBox="0 0 24 30"><rect x="1" y="1" width="22" height="28" rx="5" fill="#2B141626"/><path d="M1 15h22v9a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5z" fill="#fff" stroke="#2B1416" stroke-width="1.6"/><rect x="9" y="18" width="6" height="1.8" rx=".9" fill="#2B141666"/><rect x="5" y="22.5" width="14" height="2.2" rx="1.1" fill="#8C6BE6"/></svg></span>Bottom sheet<small>바텀시트</small></a>
+      <a class="chip" href="#dropdown"><span class="g"><svg width="32" height="28" viewBox="0 0 32 28"><rect x="1" y="1" width="30" height="10" rx="4" fill="#fff" stroke="#2B1416" stroke-width="1.6"/><path d="M23 5l2.5 2.5L28 5" fill="none" stroke="#2B1416" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="13.5" width="30" height="13.5" rx="4" fill="#F7F4EE"/><rect x="3" y="15.5" width="26" height="4.5" rx="2" fill="#F3E7A8"/><rect x="5" y="22.5" width="14" height="2" rx="1" fill="#2B141666"/></svg></span>Dropdown<small>드롭다운</small></a>
+      <a class="chip" href="#chips"><span class="g"><svg width="34" height="24" viewBox="0 0 34 24"><rect x="1" y="2" width="15" height="9" rx="4.5" fill="#2B1416"/><rect x="18" y="2" width="15" height="9" rx="4.5" fill="#fff" stroke="#2B1416" stroke-width="1.4"/><rect x="1" y="13.5" width="19" height="9" rx="4.5" fill="#fff" stroke="#2B1416" stroke-width="1.4"/><rect x="22" y="13.5" width="11" height="9" rx="4.5" fill="#2B1416"/></svg></span>Chips<small>칩</small></a>
+      <a class="chip" href="#segmented"><span class="g"><svg width="34" height="18" viewBox="0 0 34 18"><rect x="1" y="1" width="32" height="16" rx="5" fill="#F7F4EE" stroke="#2B141633" stroke-width="1"/><rect x="12" y="3" width="10" height="12" rx="3.5" fill="#fff" stroke="#2B1416" stroke-width="1.5"/></svg></span>Segmented<small>세그먼트</small></a>
+      <a class="chip" href="#slider"><span class="g"><svg width="34" height="18" viewBox="0 0 34 18"><rect x="2" y="7.5" width="30" height="3" rx="1.5" fill="#2B141626"/><rect x="9" y="7.5" width="15" height="3" rx="1.5" fill="#2B1416"/><circle cx="9" cy="9" r="5" fill="#fff" stroke="#2B1416" stroke-width="1.8"/><circle cx="24" cy="9" r="5" fill="#fff" stroke="#2B1416" stroke-width="1.8"/></svg></span>Slider<small>슬라이더</small></a>
+      <a class="chip" href="#cards"><span class="g"><svg width="30" height="28" viewBox="0 0 30 28"><rect x="1" y="1" width="28" height="12" rx="4" fill="#8C6BE6"/><circle cx="23" cy="7" r="2.6" fill="#fff"/><rect x="5" y="5.8" width="11" height="2.4" rx="1.2" fill="#fff"/><rect x="1" y="15" width="28" height="12" rx="4" fill="#fff" stroke="#2B1416" stroke-width="1.4"/><circle cx="23" cy="21" r="2.6" fill="none" stroke="#2B1416" stroke-width="1.3"/><rect x="5" y="19.8" width="11" height="2.4" rx="1.2" fill="#2B1416"/></svg></span>Selectable cards<small>선택 카드</small></a>
+    </nav>
+  </header>
+
+  <h3 class="sec-h">직접 눌러 보세요 · 6개</h3>
+
+  <!-- 1 Bottom sheet -->
+  <section class="item rv" id="bottom-sheet">
+    <div class="num">01 / 06</div>
+    <h2 class="disp">Bottom sheet<span class="kr">바텀시트</span></h2>
+    <p class="what">아래에서 올라오는 선택 창</p>
+    <p class="when">정렬, 필터, 옵션 고르기 · 쇼핑 앱, 지도 앱</p>
+    <div class="stage p-lime">
+      <div class="screen bs open" id="bs">
+        <div class="top">홈 카페 용품<span>상품 48개</span></div>
+        <div class="bs-bar"><button class="bs-sort" aria-haspopup="dialog" aria-expanded="true"><span>추천순</span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5l3 3 3-3"/></svg></button><span>필터</span><span>무료 배송</span></div>
+        <ul class="bs-list">
+          <li data-rec="1" data-price="32000" data-rev="210"><span class="th"><svg viewBox="0 0 46 46"><rect width="46" height="46" fill="#D9D0F7"/><path d="M14 18h16v15a4 4 0 0 1-4 4h-8a4 4 0 0 1-4-4z" fill="#fff" stroke="#2B1416" stroke-width="2" stroke-linejoin="round"/><path d="M30 21l7-6" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round"/><path d="M14 18q8-6 16 0" fill="none" stroke="#2B1416" stroke-width="2"/><path d="M14 23h-3v6h3" fill="none" stroke="#2B1416" stroke-width="2"/></svg></span><span><b>드립 주전자</b><small>리뷰 210</small></span><span class="pr">32,000원</span></li>
+          <li data-rec="2" data-price="45000" data-rev="88"><span class="th"><svg viewBox="0 0 46 46"><rect width="46" height="46" fill="#C9DEC2"/><path d="M15 20h16l-2 17H17z" fill="#fff" stroke="#2B1416" stroke-width="2" stroke-linejoin="round"/><rect x="14" y="15" width="18" height="5" rx="2" fill="#F3E7A8" stroke="#2B1416" stroke-width="2"/><path d="M23 15V10h8" fill="none" stroke="#2B1416" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="10" r="2.4" fill="#2B1416"/></svg></span><span><b>핸드밀</b><small>리뷰 88</small></span><span class="pr">45,000원</span></li>
+          <li data-rec="3" data-price="18000" data-rev="512"><span class="th"><svg viewBox="0 0 46 46"><rect width="46" height="46" fill="#F3E7A8"/><path d="M12 17h14v14a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4z" fill="#fff" stroke="#2B1416" stroke-width="2" stroke-linejoin="round"/><path d="M26 20h2.5a3.5 3.5 0 0 1 0 7H26" fill="none" stroke="#2B1416" stroke-width="2"/><path d="M24 22h10v10a3 3 0 0 1-3 3h-4" fill="#D9D0F7" stroke="#2B1416" stroke-width="2" stroke-linejoin="round"/></svg></span><span><b>머그컵 2개 세트</b><small>리뷰 512</small></span><span class="pr">18,000원</span></li>
+        </ul>
+        <div class="bs-scrim" aria-hidden="true"></div>
+        <div class="bs-sheet" role="dialog" aria-label="정렬 고르기">
+          <div class="grab" aria-hidden="true"></div>
+          <h4>정렬<small>하나만 골라요</small></h4>
+          <div role="radiogroup" aria-label="정렬">
+            <button role="radio" aria-checked="true" data-k="rec">추천순<i></i></button>
+            <button role="radio" aria-checked="false" data-k="price">낮은 가격순<i></i></button>
+            <button role="radio" aria-checked="false" data-k="rev">리뷰 많은순<i></i></button>
+          </div>
+        </div>
+      </div>
+      <span class="hint">하나 골라 보세요</span>
+    </div>
+    <div class="say"><p>정렬 버튼을 누르면 바텀시트가 아래에서 올라와서 하나만 고르게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 2 Dropdown -->
+  <section class="item rv" id="dropdown">
+    <div class="num">02 / 06</div>
+    <h2 class="disp">Dropdown<span class="kr">드롭다운</span></h2>
+    <p class="what">눌러서 펼치고 하나만 골라요</p>
+    <p class="when">고를 게 많을 때 · 배송 요청, 나라, 태어난 해</p>
+    <div class="stage p-butter">
+      <div class="screen dd" id="dd">
+        <div class="top">배송 정보<span>2 / 3</span></div>
+        <span class="dd-l" id="dd-l">배송 요청사항</span>
+        <div class="dd-wrap">
+          <button class="dd-trig" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="dd-l dd-v"><span id="dd-v">선택해 주세요</span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
+          <div class="dd-list on" role="listbox" aria-labelledby="dd-l">
+            <button role="option" aria-selected="false">문 앞에 놓아 주세요<svg viewBox="0 0 16 16" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.3l3 2.9 6-6.2"/></svg></button>
+            <button role="option" aria-selected="false">경비실에 맡겨 주세요<svg viewBox="0 0 16 16" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.3l3 2.9 6-6.2"/></svg></button>
+            <button role="option" aria-selected="false">직접 받을게요<svg viewBox="0 0 16 16" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.3l3 2.9 6-6.2"/></svg></button>
+            <button role="option" aria-selected="false">배송 전에 연락 주세요<svg viewBox="0 0 16 16" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.3l3 2.9 6-6.2"/></svg></button>
+          </div>
+        </div>
+        <p class="dd-help" aria-live="polite"><i aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="#2B1416" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></i><span>기사님께 그대로 전달돼요</span></p>
+        <div class="dd-memo">추가 메모 (선택)</div>
+        <button class="pill-btn dd-save" aria-disabled="true">저장</button>
+      </div>
+      <span class="hint">하나 골라 보세요</span>
+    </div>
+    <div class="say"><p>배송 요청사항은 드롭다운으로 펼쳐서 하나만 고르게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 3 Chips -->
+  <section class="item rv" id="chips">
+    <div class="num">03 / 06</div>
+    <h2 class="disp">Chips<span class="kr">칩</span></h2>
+    <p class="what">여러 개를 톡톡 골라요</p>
+    <p class="when">필터, 관심사, 태그 · 검색 결과, 가입 첫 화면</p>
+    <div class="stage p-sage">
+      <div class="screen ch" id="ch">
+        <div class="top">오늘 저녁 뭐 먹지<span class="ch-count" aria-live="polite">레시피 6개</span></div>
+        <div class="ch-chips" role="group" aria-label="레시피 필터">
+          <button aria-pressed="true" data-tag="veg"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg>채식</button>
+          <button aria-pressed="false" data-tag="fast"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg>15분</button>
+          <button aria-pressed="false" data-tag="hot"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg>매운맛</button>
+          <button aria-pressed="false" data-tag="bowl"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg>한 그릇</button>
+          <button aria-pressed="false" data-tag="sweet"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg>디저트</button>
+        </div>
+        <div class="ch-grid">
+          <figure data-tags="veg fast bowl"><svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#D9D0F7"/><ellipse cx="40" cy="38" rx="24" ry="9" fill="#fff" stroke="#2B1416" stroke-width="2.2"/><path d="M16 36c2 12 46 12 48 0" fill="#fff" stroke="#2B1416" stroke-width="2.2"/><rect x="30" y="27" width="9" height="9" rx="2" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.8"/><rect x="41" y="29" width="9" height="9" rx="2" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.8"/></svg><figcaption>두부 덮밥</figcaption></figure>
+          <figure data-tags="veg fast hot bowl"><svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#F3E7A8"/><path d="M16 32h48c-2 14-46 14-48 0z" fill="#fff" stroke="#2B1416" stroke-width="2.2"/><path d="M26 31q4-10 8 0t8 0 8 0 6 0" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round"/><circle cx="52" cy="25" r="3.4" fill="#C9DEC2" stroke="#2B1416" stroke-width="1.6"/></svg><figcaption>비빔국수</figcaption></figure>
+          <figure data-tags="hot bowl"><svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#C9DEC2"/><path d="M18 30h44v6a10 10 0 0 1-10 10H28a10 10 0 0 1-10-10z" fill="#fff" stroke="#2B1416" stroke-width="2.2"/><path d="M14 30h52" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round"/><path d="M32 22q3-4 0-8M40 22q3-4 0-8M48 22q3-4 0-8" fill="none" stroke="#2B1416" stroke-width="1.8" stroke-linecap="round"/></svg><figcaption>김치찌개</figcaption></figure>
+          <figure data-tags="veg sweet"><svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#DDE78E"/><ellipse cx="40" cy="44" rx="20" ry="5" fill="#fff" stroke="#2B1416" stroke-width="2.2"/><path d="M27 42l3-20h20l3 20z" fill="#F3E7A8" stroke="#2B1416" stroke-width="2.2" stroke-linejoin="round"/><path d="M30 22h20" stroke="#2B1416" stroke-width="2.2"/><path d="M33 22q7-6 14 0" fill="#fff" stroke="#2B1416" stroke-width="2"/></svg><figcaption>단호박 푸딩</figcaption></figure>
+          <figure data-tags="hot fast"><svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#D9D0F7"/><ellipse cx="40" cy="38" rx="26" ry="10" fill="#fff" stroke="#2B1416" stroke-width="2.2"/><rect x="24" y="30" width="14" height="6" rx="3" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.8" transform="rotate(-12 31 33)"/><rect x="38" y="33" width="14" height="6" rx="3" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.8" transform="rotate(10 45 36)"/><rect x="31" y="38" width="14" height="6" rx="3" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.8"/></svg><figcaption>떡볶이</figcaption></figure>
+          <figure data-tags="veg fast sweet"><svg viewBox="0 0 80 60"><rect width="80" height="60" fill="#F3E7A8"/><path d="M22 28h36l-4 18H26z" fill="#fff" stroke="#2B1416" stroke-width="2.2" stroke-linejoin="round"/><circle cx="32" cy="25" r="5" fill="#D9D0F7" stroke="#2B1416" stroke-width="1.8"/><circle cx="44" cy="24" r="4.5" fill="#C9DEC2" stroke="#2B1416" stroke-width="1.8"/><circle cx="51" cy="27" r="3.5" fill="#DDE78E" stroke="#2B1416" stroke-width="1.6"/></svg><figcaption>과일 요거트</figcaption></figure>
+          <p class="ch-empty" hidden>맞는 레시피가 없어요. 칩을 하나 빼 보세요.</p>
+        </div>
+      </div>
+      <span class="hint">여러 개 눌러 보세요</span>
+    </div>
+    <div class="say"><p>레시피 필터는 칩으로 만들어서 여러 개를 함께 고를 수 있게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 4 Segmented control -->
+  <section class="item rv" id="segmented">
+    <div class="num">04 / 06</div>
+    <h2 class="disp">Segmented<span class="kr">세그먼트</span></h2>
+    <p class="what">두세 개 중 하나로 바로 바꿔요</p>
+    <p class="when">같은 내용, 다른 보기 · 일/주/월, 목록/지도 · 정식 이름은 Segmented control</p>
+    <div class="stage p-lav">
+      <div class="screen sg v0" id="sg">
+        <div class="top">걸음 수<span>내 기록</span></div>
+        <div class="sg-seg" role="group" aria-label="기간"><span class="ind"></span><button aria-pressed="true">일</button><button aria-pressed="false">주</button><button aria-pressed="false">월</button></div>
+        <div class="sg-big" aria-live="polite"><small>오늘</small><b><em class="n" style="font-style:normal">8,240</em><span>걸음</span></b></div>
+        <div class="sg-chart" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="sg-x" aria-hidden="true"></div>
+      </div>
+      <span class="hint">주, 월을 눌러 보세요</span>
+    </div>
+    <div class="say"><p>걸음 수 그래프 위에 일 · 주 · 월 세그먼트를 달아서 보기를 바꾸게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 5 Slider -->
+  <section class="item rv" id="slider">
+    <div class="num">05 / 06</div>
+    <h2 class="disp">Slider<span class="kr">슬라이더</span></h2>
+    <p class="what">끌어서 범위나 크기를 정해요</p>
+    <p class="when">가격대, 거리, 음량 · 숙소 검색, 설정 화면</p>
+    <div class="stage p-lime">
+      <div class="screen sl" id="sl">
+        <div class="top">숙소 찾기<span>이번 주말 · 2명</span></div>
+        <div class="sl-head"><span>1박 가격</span><b class="sl-val" aria-live="polite">5만 – 15만 원</b></div>
+        <div class="sl-hist" aria-hidden="true"></div>
+        <div class="sl-range">
+          <span class="track"></span><span class="fill"></span>
+          <input type="range" min="0" max="11" value="2" step="1" aria-label="최소 가격">
+          <input type="range" min="0" max="11" value="7" step="1" aria-label="최대 가격">
+        </div>
+        <div class="sl-ends" aria-hidden="true"><span>2만</span><span>25만 원 +</span></div>
+        <button class="pill-btn sl-go"><span>숙소 <span class="n">0</span>곳 보기</span></button>
+      </div>
+      <span class="hint">동그라미를 끌어 보세요</span>
+    </div>
+    <div class="say"><p>숙소 가격은 양쪽 끝을 끄는 슬라이더로 최소와 최대를 정하게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 6 Selectable cards -->
+  <section class="item rv" id="cards">
+    <div class="num">06 / 06</div>
+    <h2 class="disp">Selectable cards<span class="kr">선택 카드</span></h2>
+    <p class="what">설명이 붙은 큰 선택지</p>
+    <p class="when">비교하고 하나 고를 때 · 배송 방법, 요금제</p>
+    <div class="stage p-butter">
+      <div class="screen sc" id="sc">
+        <div class="top">배송 방법<span>3 / 3</span></div>
+        <h4 id="sc-h">어떻게 받을까요?</h4>
+        <div class="sc-list" role="radiogroup" aria-labelledby="sc-h">
+          <button role="radio" aria-checked="true" data-n="일반 배송"><span class="g" style="background:var(--sage)"><svg viewBox="0 0 24 24" fill="none" stroke="#2B1416" stroke-width="1.8" stroke-linejoin="round"><path d="M2.5 6.5h11v10h-11zM13.5 9.5h4l3 3.5v3.5h-7z"/><circle cx="6.5" cy="17.5" r="2" fill="#fff"/><circle cx="17" cy="17.5" r="2" fill="#fff"/></svg></span><span class="tx"><b>일반 배송</b><small>2~3일 안에 도착</small></span><span class="rd"><svg viewBox="0 0 12 12" fill="none" stroke="#8C6BE6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></span></button>
+          <button role="radio" aria-checked="false" tabindex="-1" data-n="빠른 배송"><span class="g" style="background:var(--lav)"><svg viewBox="0 0 24 24" fill="none" stroke="#2B1416" stroke-width="1.8" stroke-linejoin="round"><path d="M13.5 2.5L5 13.5h6l-1 8 8.5-11h-6z" fill="#F3E7A8"/></svg></span><span class="tx"><b>빠른 배송</b><small>내일 도착</small></span><span class="rd"><svg viewBox="0 0 12 12" fill="none" stroke="#8C6BE6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></span></button>
+          <button role="radio" aria-checked="false" tabindex="-1" data-n="매장 픽업"><span class="g" style="background:var(--butter)"><svg viewBox="0 0 24 24" fill="none" stroke="#2B1416" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 9.5l1.5-5h14l1.5 5z" fill="#DDE78E"/><path d="M4.5 9.5v10h15v-10M10 19.5v-5h4v5"/></svg></span><span class="tx"><b>매장 픽업</b><small>오늘 저녁부터 찾아가요</small></span><span class="rd"><svg viewBox="0 0 12 12" fill="none" stroke="#8C6BE6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></span></button>
+        </div>
+        <button class="pill-btn sc-go"><span>일반 배송으로 계속</span></button>
+      </div>
+      <span class="hint">다른 카드를 눌러 보세요</span>
+    </div>
+    <div class="say"><p>배송 방법은 설명이 붙은 선택 카드로 보여 주고, 하나만 고르게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- All in one sentence -->
+  <h3 class="sec-h">한 문장으로 시키기</h3>
+  <section class="rv">
+    <h2 class="disp" style="font-size:clamp(40px,11vw,50px)">Say it<br>like <span class="v">this</span>.<span class="kr">이렇게 말해요</span></h2>
+    <div class="prompt">
+      <p class="bubble" id="all" data-type>정렬은 바텀시트로 아래에서 올라오게 하고, 카테고리는 칩으로 여러 개 고를 수 있게 해 줘. 목록과 지도는 세그먼트로 바꾸고, 가격은 슬라이더로 정하고, 배송 방법은 선택 카드로 하나만 고르게 해 줘.</p>
+      <div class="row"><small>ChatGPT · Claude 어디든 돼요</small><button class="copy" data-copy="#all"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>문장 복사</span></button></div>
+    </div>
+    <ol class="steps">
+      <li>위 문장을 복사해요.</li>
+      <li>AI 채팅창에 붙여 넣고, 앞에 "○○ 쇼핑몰 화면 만들어 줘."를 붙여요.</li>
+      <li>고를 게 많으면 드롭다운, 두세 개면 세그먼트. 내 화면에 맞게 이름만 바꿔요.</li>
+    </ol>
+    <p class="note">헷갈리면 "하나만 골라요? 여러 개 골라요?"부터 정해 보세요. 그게 이름을 정해 줘요.</p>
+  </section>
+
+  <footer class="foot rv">
+    <img class="bud" src="../assets/logo-bubble.svg" alt="">
+    <p>궁금한 건 DM으로 편하게 물어봐 주세요</p>
+    <a class="ig" href="https://www.instagram.com/ai_masterin30days/" rel="noopener">@ai_masterin30days 보러 가기</a>
+    <p class="meta">그림과 화면은 모두 직접 그렸어요 · 2026.11</p>
+  </footer>
+</main>
+
+<script src="../assets/guide.js"></script>
+<script>
+{
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const flip = (els, change) => {            // FLIP helper: animate elements from old to new positions
+    const before = new Map(els.map(e => [e, e.getBoundingClientRect().top]));
+    change();
+    if (calm) return;
+    els.forEach(e => { const d = before.get(e) - e.getBoundingClientRect().top; if (d) e.animate([{transform: `translateY(${d}px)`}, {transform: 'none'}], {duration: 600, easing: 'cubic-bezier(.34,1.4,.64,1)'}); });
+  };
+
+  // 1 Bottom sheet: open/close, pick re-sorts the list
+  const bs = document.getElementById('bs'), sortBtn = bs.querySelector('.bs-sort'), list = bs.querySelector('.bs-list'), radios = [...bs.querySelectorAll('[role=radio]')];
+  const sheet = (on, focus = true) => { bs.classList.toggle('open', on); sortBtn.setAttribute('aria-expanded', on); radios.forEach(r => r.tabIndex = on && r.getAttribute('aria-checked') === 'true' ? 0 : -1); if (on && focus) radios.find(r => r.tabIndex === 0).focus({preventScroll: true}); };
+  sheet(true, false);
+  sortBtn.addEventListener('click', () => sheet(true));
+  bs.querySelector('.bs-scrim').addEventListener('click', () => sheet(false));
+  radios.forEach((r, i) => {
+    r.addEventListener('click', () => {
+      radios.forEach(x => x.setAttribute('aria-checked', x === r));
+      sortBtn.querySelector('span').textContent = r.textContent.trim();
+      setTimeout(() => {
+        sheet(false); sortBtn.focus({preventScroll: true});
+        const k = r.dataset.k, items = [...list.children];
+        items.sort((a, b) => k === 'price' ? a.dataset.price - b.dataset.price : k === 'rev' ? b.dataset.rev - a.dataset.rev : a.dataset.rec - b.dataset.rec);
+        setTimeout(() => flip(items, () => items.forEach(x => list.append(x))), calm ? 0 : 220);
+      }, calm ? 0 : 260);
+    });
+    r.addEventListener('keydown', e => { const d = {ArrowDown: 1, ArrowUp: -1}[e.key]; if (d) { e.preventDefault(); radios[(i + d + 3) % 3].focus(); } if (e.key === 'Escape') sheet(false); });
+  });
+
+  // 2 Dropdown
+  const dd = document.getElementById('dd'), trig = dd.querySelector('.dd-trig'), ddList = dd.querySelector('.dd-list'), ddOpts = [...ddList.querySelectorAll('[role=option]')];
+  const ddOpen = on => { ddList.classList.toggle('on', on); trig.setAttribute('aria-expanded', on); ddOpts.forEach(o => o.tabIndex = on ? 0 : -1); };
+  ddOpen(true);
+  trig.addEventListener('click', () => { const on = !ddList.classList.contains('on'); ddOpen(on); if (on) (ddOpts.find(o => o.getAttribute('aria-selected') === 'true') || ddOpts[0]).focus({preventScroll: true}); });
+  ddOpts.forEach((o, i) => {
+    o.addEventListener('click', () => {
+      ddOpts.forEach(x => x.setAttribute('aria-selected', x === o));
+      dd.querySelector('#dd-v').textContent = o.textContent.trim(); dd.classList.add('has'); dd.querySelector('.dd-save').setAttribute('aria-disabled', 'false');
+      setTimeout(() => { ddOpen(false); trig.focus({preventScroll: true}); }, calm ? 0 : 180);
+    });
+    o.addEventListener('keydown', e => { const d = {ArrowDown: 1, ArrowUp: -1}[e.key]; if (d) { e.preventDefault(); ddOpts[(i + d + 4) % 4].focus(); } if (e.key === 'Escape') { ddOpen(false); trig.focus(); } });
+  });
+  document.addEventListener('click', e => { if (!dd.querySelector('.dd-wrap').contains(e.target) && dd.classList.contains('has')) ddOpen(false); });
+
+  // 3 Chips: AND filter
+  const ch = document.getElementById('ch'), chips = [...ch.querySelectorAll('.ch-chips button')], figs = [...ch.querySelectorAll('figure')];
+  const filter = () => {
+    const on = chips.filter(c => c.getAttribute('aria-pressed') === 'true').map(c => c.dataset.tag);
+    let n = 0;
+    figs.forEach(f => { const show = on.every(t => f.dataset.tags.split(' ').includes(t)); if (show && f.hidden) { f.style.animation = 'none'; void f.offsetWidth; f.style.animation = ''; } f.hidden = !show; n += show; });
+    ch.querySelector('.ch-empty').hidden = n > 0;
+    ch.querySelector('.ch-count').textContent = `레시피 ${n}개`;
+  };
+  chips.forEach(c => c.addEventListener('click', () => { c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true'); filter(); }));
+  filter();
+
+  // 4 Segmented: number counts, bars grow, colour world changes
+  const sg = document.getElementById('sg'), segs = [...sg.querySelectorAll('.sg-seg button')], bars = [...sg.querySelectorAll('.sg-chart i')], num = sg.querySelector('.n');
+  const views = [
+    {label: '오늘', total: 8240, x: ['6시', '9시', '12시', '15시', '18시', '21시', '24시'], v: [8, 34, 52, 28, 70, 46, 12]},
+    {label: '이번 주', total: 52180, x: ['월', '화', '수', '목', '금', '토', '일'], v: [62, 48, 80, 55, 70, 96, 40]},
+    {label: '이번 달', total: 231400, x: ['1주', '', '2주', '', '3주', '', '4주'], v: [50, 64, 58, 76, 88, 70, 92]},
+  ];
+  let shown = 8240, raf;
+  const show = (i, first) => {
+    const w = views[i], max = Math.max(...w.v);
+    segs.forEach((s, k) => s.setAttribute('aria-pressed', k === i));
+    sg.querySelector('.ind').style.transform = `translateX(${i * 100}%)`;
+    sg.className = 'screen sg v' + i;
+    sg.querySelector('.sg-big small').textContent = w.label;
+    bars.forEach((b, k) => { b.style.height = (w.v[k] / max * 100) + '%'; b.classList.toggle('hi', w.v[k] === max); });
+    sg.querySelector('.sg-x').innerHTML = w.x.map(t => `<span>${t}</span>`).join('');
+    cancelAnimationFrame(raf);
+    const from = shown, to = w.total, t0 = performance.now(), dur = first || calm ? 0 : 700;
+    const tick = t => { const p = dur ? Math.min((t - t0) / dur, 1) : 1, e = 1 - Math.pow(1 - p, 3); shown = Math.round(from + (to - from) * e); num.textContent = shown.toLocaleString('ko-KR'); if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+  };
+  segs.forEach((s, i) => s.addEventListener('click', () => show(i)));
+  show(0, true);
+
+  // 5 Slider: dual range over a price histogram (demo data)
+  const sl = document.getElementById('sl'), [lo, hi] = sl.querySelectorAll('input'), hist = sl.querySelector('.sl-hist'), fill = sl.querySelector('.fill'), goN = sl.querySelector('.sl-go .n');
+  const steps = [2, 3, 5, 7, 9, 11, 13, 15, 18, 20, 23, 25];       // 만 원
+  const counts = [3, 6, 9, 12, 10, 8, 7, 5, 4, 3, 2, 2];          // stays per price step (demo)
+  hist.innerHTML = counts.map(c => `<i style="height:${c / 12 * 100}%"></i>`).join('');
+  const hb = [...hist.children];
+  const upd = moved => {
+    let a = +lo.value, b = +hi.value;
+    if (a > b) { if (moved === lo) { lo.value = b; a = b; } else { hi.value = a; b = a; } }
+    const pct = v => `calc(11px + (100% - 22px) * ${v / 11})`;
+    fill.style.left = pct(a); fill.style.width = `calc((100% - 22px) * ${(b - a) / 11})`;
+    hb.forEach((h, k) => h.classList.toggle('in', k >= a && k <= b));
+    sl.querySelector('.sl-val').textContent = `${steps[a]}만 – ${steps[b]}만 원${b === 11 ? ' +' : ''}`;
+    lo.setAttribute('aria-valuetext', steps[a] + '만 원'); hi.setAttribute('aria-valuetext', steps[b] + '만 원');
+    const n = counts.slice(a, b + 1).reduce((s, c) => s + c, 0);
+    if (goN.textContent !== String(n)) { goN.textContent = n; goN.classList.remove('bump'); void goN.offsetWidth; goN.classList.add('bump'); }
+  };
+  [lo, hi].forEach(r => r.addEventListener('input', () => upd(r)));
+  upd();
+
+  // 6 Selectable cards: radiogroup with arrow keys
+  const sc = document.getElementById('sc'), cards = [...sc.querySelectorAll('[role=radio]')], goTx = sc.querySelector('.sc-go span');
+  const pick = c => {
+    cards.forEach(x => { x.setAttribute('aria-checked', x === c); x.tabIndex = x === c ? 0 : -1; });
+    goTx.textContent = c.dataset.n + '으로 계속'; goTx.classList.remove('swap'); void goTx.offsetWidth; goTx.classList.add('swap');
+  };
+  cards.forEach((c, i) => {
+    c.addEventListener('click', () => pick(c));
+    c.addEventListener('keydown', e => { const d = {ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1}[e.key]; if (d) { e.preventDefault(); const n = cards[(i + d + 3) % 3]; n.focus(); pick(n); } });
+  });
+}
+</script>
+</body>
+</html>

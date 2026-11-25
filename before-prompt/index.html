@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>시키기 전 6가지 · ai_masterin30days</title>
+<meta name="description" content="문제부터, 사용자 정하기, 질문부터, 가정 꺼내기, 성공 기준, 두 가지 안. AI한테 시키기 전에 6가지만 정하면 결과가 달라져요.">
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="../assets/logo-bubble.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../assets/guide.css">
+<style>
+  /* ---- Page-specific ---- */
+  :root { --mute2: #6E6360; } /* darker mute for small text inside demo screens (AA on white) */
+  .hero h1 .l3 { display: block; }
+  .screen .top span { color: var(--mute2); }
+
+  /* Chat scene: app preview + chat + composer (shared by all six demos on this page) */
+  .log { display: flex; flex-direction: column; gap: 7px; }
+  .msg { max-width: 88%; padding: 9px 12px; border-radius: 16px; font: 600 13.5px/1.5 var(--ko); animation: pop .45s var(--spring) both; }
+  .msg.me { align-self: flex-end; background: var(--plum); color: var(--white); border-bottom-right-radius: 5px; }
+  .msg.ai { align-self: flex-start; background: var(--cream); border-bottom-left-radius: 5px; }
+  .msg.ai::before { content: "AI"; display: block; font: 700 10.5px/1 var(--disp); color: var(--violet); letter-spacing: .04em; margin-bottom: 4px; }
+  .msg.ai.typing::before { display: none; }
+  .msg.wide { max-width: 100%; width: 100%; }
+  .msg b.hl { color: var(--violet); }
+  .dots { display: flex; gap: 4px; padding: 4px 2px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--mute); animation: dot 1s var(--ease) infinite; }
+  .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 0%, 60%, 100% { opacity: .35; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.94); } }
+  .ask { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 12px; padding: 6px 6px 6px 14px; border-radius: 99px; border: 1.5px solid var(--plum); background: var(--white); font: 600 13.5px/1.35 var(--ko); text-align: left; transition: transform .25s var(--spring), opacity .3s; }
+  .ask:active { transform: scale(.97); }
+  .ask .go { margin-left: auto; flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--violet); display: grid; place-items: center; transition: transform .3s var(--spring); }
+  .ask .go svg { width: 16px; height: 16px; }
+  .ask:hover .go { transform: translateY(-2px); }
+  .ask[disabled] { opacity: .45; cursor: default; }
+  .ask[hidden], .again[hidden] { display: none; }
+  .again { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; height: 44px; border-radius: 99px; background: var(--cream); font: 700 13.5px/1 var(--ko); animation: pop .4s var(--spring) both; }
+  .again svg { width: 15px; height: 15px; }
+  .app { background: var(--cream); border-radius: 16px; padding: 12px; position: relative; overflow: hidden; transition: background .45s var(--ease); }
+  .app .dots3 { display: flex; gap: 4px; margin-bottom: 9px; }
+  .app .dots3 i { width: 6px; height: 6px; border-radius: 50%; background: #2B141629; }
+  .tag { position: absolute; font: 700 11.5px/1 var(--ko); padding: 6px 9px; border-radius: 99px; white-space: nowrap; transition: opacity .3s, transform .45s var(--spring); }
+  .tag.bad { background: var(--butter); border: 1.5px solid var(--plum); }
+  .tag.good { background: var(--sage); border: 1.5px solid var(--plum); }
+  .gap { height: 12px; }
+
+  /* hero chip glyphs */
+  .g-q { width: 30px; height: 26px; border-radius: 9px 9px 9px 3px; background: var(--violet); color: var(--white); display: grid; place-items: center; font: 800 15px/1 var(--disp); animation: qbob 2.6s var(--ease) infinite; }
+  @keyframes qbob { 50% { transform: translateY(-2px) rotate(-6deg); } }
+
+  /* 1 Problem first: the save button only got bigger → then it moves where people look */
+  .note { padding-bottom: 58px; min-height: 160px; }
+  .note b { display: block; font: 800 14px/1.3 var(--ko); }
+  .note p { font: 500 12.5px/1.6 var(--ko); color: var(--mute2); margin-top: 4px; }
+  .note .save { position: absolute; right: 10px; top: 8px; width: 62%; height: 40px; border-radius: 12px; background: var(--plum); color: var(--white); display: grid; place-items: center; font: 800 15px/1 var(--ko); transition: top .6s var(--spring), width .6s var(--ease), background .4s, border-radius .4s; }
+  .note .tag.bad { right: 14px; top: 56px; transform: rotate(3deg); }
+  .note .tag.good { right: 12px; top: 10px; opacity: 0; transform: translateY(6px); }
+  .pf.fixed .note .save { top: calc(100% - 50px); width: calc(100% - 20px); border-radius: 99px; background: var(--violet); }
+  .pf.fixed .note .tag.bad { opacity: 0; transform: scale(.6); }
+  .pf.fixed .note .tag.good { opacity: 1; transform: rotate(-2deg); }
+
+  /* 2 Define the user: one choice reshapes the whole schedule screen */
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--cream); border-radius: 14px; padding: 4px; }
+  .seg button { border-radius: 10px; padding: 8px 2px; font: 700 12.5px/1.25 var(--ko); color: var(--mute2); transition: background .3s, color .3s, transform .3s var(--spring); }
+  .seg button small { display: block; font: 600 11px/1.2 var(--ko); }
+  .seg button[aria-checked="true"] { background: var(--plum); color: var(--white); transform: scale(1.03); }
+  .cal { margin-top: 10px; background: var(--white); border: 1.5px solid var(--line); }
+  .cal .hd { display: flex; justify-content: space-between; align-items: baseline; font: 800 14px/1.2 var(--ko); transition: font-size .4s var(--ease); }
+  .cal .hd small { font: 600 11.5px/1 var(--ko); color: var(--mute2); }
+  .cal .rws { display: grid; gap: 6px; margin-top: 10px; }
+  .cal .rw { display: flex; align-items: center; gap: 10px; background: var(--cream); border-radius: 10px; padding: 8px 10px; font: 600 12.5px/1.3 var(--ko); animation: pop .45s var(--spring) both; }
+  .cal .rw time { font: 700 11.5px/1 var(--disp); color: var(--mute2); flex: none; }
+  .cal .rw:nth-child(2) { animation-delay: .05s; } .cal .rw:nth-child(3) { animation-delay: .1s; } .cal .rw:nth-child(4) { animation-delay: .15s; }
+  .cal .add { margin-top: 10px; margin-left: auto; width: 32px; height: 32px; border-radius: 50%; background: var(--plum); color: var(--white); display: grid; place-items: center; font: 700 18px/1 var(--ko); transition: all .45s var(--spring); }
+  .cal.u1 .hd { font-size: 19px; }
+  .cal.u1 .rw { font-size: 17px; font-weight: 700; padding: 13px 12px; background: var(--butter); }
+  .cal.u1 .rw time { font: 800 15px/1 var(--ko); color: var(--plum); }
+  .cal.u1 .add { width: 100%; height: 48px; border-radius: 99px; background: var(--violet); font: 800 16px/1 var(--ko); }
+  .cal.u2 .rws { gap: 4px; }
+  .cal.u2 .rw { font-size: 12px; padding: 6px 9px; background: var(--white); border: 1px solid var(--line); }
+  .cal.u2 .rw::after { content: ""; margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--lav); }
+  .cal.u2 .rw:nth-child(even)::after { background: var(--lime); }
+
+  /* 3 Questions first: AI asks three things, answers pile up, then it builds */
+  .qcard { width: 100%; max-width: 100%; }
+  .qcard .qn { font: 700 11px/1 var(--disp); color: var(--mute2); }
+  .qcard .qt { font: 800 15px/1.35 var(--ko); margin-top: 5px; animation: pop .4s var(--spring) both; }
+  .qcard .qa { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .qcard .qa button { height: 40px; border-radius: 12px; background: var(--white); border: 1.5px solid var(--plum); font: 700 13.5px/1 var(--ko); transition: background .2s, color .2s, transform .25s var(--spring); }
+  .qcard .qa button:active { transform: scale(.95); background: var(--plum); color: var(--white); }
+  .qbar { display: flex; gap: 4px; margin-top: 10px; }
+  .qbar i { flex: 1; height: 4px; border-radius: 4px; background: #2B14161F; transition: background .4s; }
+  .qbar i.on { background: var(--violet); }
+  .ans { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 28px; align-items: center; }
+  .ans .ph { font: 600 12px/1 var(--ko); color: var(--mute2); }
+  .ans span:not(.ph) { background: var(--lav); border-radius: 99px; padding: 6px 10px; font: 700 12px/1 var(--ko); animation: pop .4s var(--spring) both; }
+  .res { margin-top: 2px; background: var(--white); border-radius: 14px; padding: 10px; animation: pop .5s var(--spring) both; }
+  .res .frame { margin: 0 auto; border: 2px solid var(--plum); border-radius: 16px; padding: 10px; background: var(--cream); transition: width .5s var(--ease); }
+  .res.phone .frame { width: 62%; min-width: 150px; }
+  .res.pc .frame { width: 100%; border-radius: 10px; }
+  .res .rt { font: 800 13px/1.3 var(--ko); }
+  .res.easy .rt { font-size: 15px; }
+  .res .rh { font: 600 11px/1.4 var(--ko); color: var(--mute2); margin-top: 2px; }
+  .res .times { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+  .res .times i { font: 700 11px/1 var(--ko); font-style: normal; background: var(--white); border-radius: 99px; padding: 5px 8px; }
+  .res .times i:first-child { background: var(--plum); color: var(--white); }
+  .res .cta { margin-top: 8px; height: 34px; border-radius: 99px; background: var(--violet); color: var(--white); display: grid; place-items: center; font: 800 13px/1 var(--ko); }
+  .res.easy .cta { height: 42px; font-size: 15px; }
+  .res .gal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 8px; }
+  .res.pc .gal { grid-template-columns: repeat(4, 1fr); }
+  .res .gal i { aspect-ratio: 1; border-radius: 8px; background: var(--lav); }
+  .res .gal i:nth-child(2) { background: var(--butter); } .res .gal i:nth-child(3) { background: var(--sage); } .res .gal i:nth-child(4) { background: var(--lime); }
+  .res.phone .gal i:nth-child(4) { display: none; }
+
+  /* 4 List assumptions: test the risky one, watch the screen break, then get fixed */
+  .feedc { background: var(--white); border: 1.5px solid var(--line); border-radius: 14px; padding: 10px; transition: background .45s var(--ease); min-height: 148px; position: relative; }
+  .feedc .ph { height: 74px; border-radius: 10px; background: var(--lav); display: grid; place-items: center; overflow: hidden; transition: background .4s, border-color .4s, height .5s var(--ease), opacity .3s; border: 2px solid transparent; }
+  .feedc .ph svg { width: 100%; height: 100%; transition: opacity .3s; }
+  .feedc .ph .broken { display: none; width: 30px; height: 30px; }
+  .feedc b { display: block; margin-top: 8px; font: 800 13.5px/1.3 var(--ko); }
+  .feedc small { display: block; font: 500 12px/1.4 var(--ko); color: var(--mute2); }
+  .feedc q { display: none; font: 800 15px/1.45 var(--ko); quotes: none; }
+  .feedc .tag { right: 10px; top: 10px; opacity: 0; transform: scale(.6); }
+  .la.nophoto .feedc .ph { background: #F1EDE6; border: 2px dashed #2B141640; }
+  .la.nophoto .feedc .ph svg.pic { opacity: 0; display: none; }
+  .la.nophoto .feedc .ph .broken { display: block; }
+  .la.nophoto .feedc .tag.bad { opacity: 1; transform: rotate(3deg); }
+  .la.fixed .feedc { background: var(--butter); }
+  .la.fixed .feedc .ph { height: 0; border: 0; opacity: 0; }
+  .la.fixed .feedc b { margin-top: 0; font-size: 12px; color: var(--mute2); }
+  .la.fixed .feedc small { display: none; }
+  .la.fixed .feedc q { display: block; margin-top: 6px; animation: pop .45s var(--spring) both; }
+  .la.fixed .feedc .tag.good { opacity: 1; transform: rotate(-3deg); top: auto; bottom: 10px; }
+  .asm { display: grid; gap: 6px; margin-top: 8px; }
+  .asm button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; border-radius: 12px; background: var(--white); text-align: left; font: 700 13px/1.35 var(--ko); transition: background .3s, transform .25s var(--spring); }
+  .asm button:active { transform: scale(.97); }
+  .asm .n { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--plum); color: var(--white); display: grid; place-items: center; font: 700 11px/1 var(--disp); }
+  .asm .st { margin-left: auto; flex: none; font: 700 11px/1 var(--ko); padding: 5px 8px; border-radius: 99px; background: var(--butter); white-space: nowrap; }
+  .asm button.ok { background: #EEF5EB; } .asm button.ok .st { background: var(--sage); }
+  .asm button.risk.ok { background: #F1ECFC; } .asm button.risk.ok .st { background: var(--violet); color: var(--white); }
+
+  /* 5 Success criteria: a number to aim for; the test fills the people row */
+  .crit { background: var(--cream); border-radius: 16px; padding: 14px; transition: background .5s var(--ease), color .5s; }
+  .crit small { display: block; font: 700 11.5px/1 var(--ko); color: var(--mute2); transition: color .5s; }
+  .crit b { display: block; margin-top: 6px; font: 800 16px/1.35 var(--ko); }
+  .ppl { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 18px; position: relative; }
+  .ppl i { aspect-ratio: 3/4; position: relative; }
+  .ppl i svg { width: 100%; height: 100%; }
+  .ppl i svg * { fill: var(--white); stroke: #2B141666; stroke-width: 1.6; transition: fill .3s, stroke .3s; }
+  .ppl i.in svg * { fill: var(--plum); stroke: var(--plum); }
+  .ppl i.in { animation: pop .4s var(--spring); }
+  .ppl i:nth-child(7)::after { content: "기준"; position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font: 700 9.5px/1 var(--ko); color: var(--violet); white-space: nowrap; }
+  .c-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px; }
+  .c-meta .cnt { font: 700 15px/1 var(--disp); }
+  .c-meta .bd { font: 700 11.5px/1 var(--ko); padding: 6px 9px; border-radius: 99px; background: var(--white); white-space: nowrap; transition: background .3s, color .3s; }
+  .sc.short .c-meta .bd { background: var(--butter); }
+  .sc.win .crit { background: var(--violet); color: var(--white); }
+  .sc.win .crit small { color: #FFFFFFCC; }
+  .sc.win .ppl i svg * { fill: #FFFFFF40; stroke: #FFFFFF80; }
+  .sc.win .ppl i.in svg * { fill: var(--white); stroke: var(--white); }
+  .sc.win .ppl i:nth-child(7)::after { color: var(--white); }
+  .sc.win .c-meta .bd { background: var(--white); color: var(--violet); }
+  .sc .fine { margin-top: 8px; text-align: right; font: 500 11px/1 var(--ko); color: var(--mute2); }
+  .sc .log { margin-top: 10px; }
+
+  /* 6 Two directions: two different options; the chosen one takes the stage */
+  .duo { display: flex; gap: 8px; margin-top: 10px; }
+  .duo button { flex: 1 1 0; min-width: 0; border-radius: 14px; background: var(--cream); padding: 8px; text-align: left; border: 2px solid transparent; transition: flex-grow .55s var(--ease), opacity .4s, border-color .3s, background .3s, transform .3s var(--spring); }
+  .duo button:active { transform: scale(.97); }
+  .duo .lbl { display: flex; justify-content: space-between; align-items: center; font: 800 12.5px/1 var(--ko); margin-bottom: 7px; white-space: nowrap; }
+  .duo .lbl i { width: 16px; height: 16px; border-radius: 50%; border: 1.8px solid #2B141666; flex: none; transition: all .3s; }
+  .duo button[aria-checked="true"] { flex-grow: 2.2; border-color: var(--violet); background: var(--white); }
+  .duo button[aria-checked="true"] .lbl i { border: 5px solid var(--violet); }
+  .duo.picked button[aria-checked="false"] { opacity: .5; }
+  .mini { display: grid; gap: 4px; min-width: 0; }
+  .mini > * { min-width: 0; }
+  .mini .lr { display: flex; align-items: center; gap: 5px; background: var(--white); border-radius: 7px; padding: 4px; }
+  .duo button[aria-checked="true"] .mini .lr { background: var(--cream); }
+  .mini .lr i { width: 18px; height: 18px; border-radius: 5px; flex: none; }
+  .mini .lr span { min-width: 0; font: 600 10.5px/1.2 var(--ko); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini.grid { grid-template-columns: 1fr 1fr; }
+  .mini.grid .cd { border-radius: 8px; overflow: hidden; background: var(--white); }
+  .duo button[aria-checked="true"] .mini.grid .cd { background: var(--cream); }
+  .mini.grid .cd i { display: block; aspect-ratio: 4/3; }
+  .mini.grid .cd span { display: block; padding: 3px 5px 4px; font: 600 10px/1.2 var(--ko); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c1 { background: var(--lav); } .c2 { background: var(--butter); } .c3 { background: var(--sage); } .c4 { background: var(--lime); }
+  .td .log.after { margin-top: 10px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="brand"><img src="../assets/logo-bubble.svg" alt="">ai_masterin30days<span>무료 가이드</span></div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="eyebrow"><i></i>AI × 일하는 법</span>
+    <h1 class="disp">AI got it<span class="in"><span class="v">wrong</span>?<span class="kr">시키기 전</span></span><span class="l3">Ask first.</span></h1>
+    <p class="lead">AI가 엉뚱한 걸 만들 때, 이유 아세요?<br>
+      AI는 들은 만큼만 만들어요.<br>
+      <b>시키기 전에 6가지만 정하면 결과가 달라져요.</b></p>
+    <nav class="fan" aria-label="6개 바로 가기">
+      <a class="chip" href="#problem"><span class="g"><svg width="30" height="26" viewBox="0 0 30 26"><path d="M4 2h22a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H12l-6 5v-5H4a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3z" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.7" stroke-linejoin="round"/><path d="M15 6v6" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round"/><circle cx="15" cy="15.2" r="1.3" fill="#2B1416"/></svg></span>Problem first<small>문제부터</small></a>
+      <a class="chip" href="#user"><span class="g"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#C9DEC2" stroke="#2B1416" stroke-width="1.7"/><circle cx="14" cy="11" r="4.2" fill="#fff" stroke="#2B1416" stroke-width="1.7"/><path d="M6.5 23q7.5-8 15 0" fill="#fff" stroke="#2B1416" stroke-width="1.7"/></svg></span>Define the user<small>사용자 정하기</small></a>
+      <a class="chip" href="#questions"><span class="g"><span class="g-q">?</span></span>Questions first<small>질문부터</small></a>
+      <a class="chip" href="#assumptions"><span class="g"><svg width="30" height="26" viewBox="0 0 30 26"><rect x="1" y="1" width="28" height="24" rx="5" fill="#fff" stroke="#2B1416" stroke-width="1.7"/><circle cx="7" cy="8" r="2.2" fill="#2B1416"/><circle cx="7" cy="13.5" r="2.2" fill="#8C6BE6"/><circle cx="7" cy="19" r="2.2" fill="#2B1416"/><path d="M12 8h12M12 13.5h9M12 19h11" stroke="#2B1416" stroke-width="1.7" stroke-linecap="round"/></svg></span>List assumptions<small>가정 꺼내기</small></a>
+      <a class="chip" href="#criteria"><span class="g"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="12.5" fill="#fff" stroke="#2B1416" stroke-width="1.7"/><circle cx="14" cy="14" r="7.5" fill="#DDE78E" stroke="#2B1416" stroke-width="1.7"/><circle cx="14" cy="14" r="2.6" fill="#8C6BE6"/></svg></span>Success criteria<small>성공 기준</small></a>
+      <a class="chip" href="#two"><span class="g"><svg width="36" height="24" viewBox="0 0 36 24"><rect x="1" y="2" width="15" height="20" rx="4" fill="#F7F4EE" stroke="#2B141666" stroke-width="1.6"/><rect x="20" y="1" width="15" height="22" rx="4" fill="#D9D0F7" stroke="#8C6BE6" stroke-width="2"/><text x="8.5" y="16" font-family="Bricolage Grotesque, sans-serif" font-size="10" font-weight="700" text-anchor="middle" fill="#2B1416">A</text><text x="27.5" y="16" font-family="Bricolage Grotesque, sans-serif" font-size="10" font-weight="700" text-anchor="middle" fill="#2B1416">B</text></svg></span>Two directions<small>두 가지 안</small></a>
+    </nav>
+  </header>
+
+  <h3 class="sec-h">직접 눌러 보세요 · 6개</h3>
+
+  <!-- 1 Problem first -->
+  <section class="item rv" id="problem">
+    <div class="num">01 / 06</div>
+    <h2 class="disp">Problem<br>first<span class="kr">문제부터</span></h2>
+    <p class="what">해결책 말고 문제를 말해요</p>
+    <p class="when">기능 추가, 화면 수정할 때 · "사람들이 저장을 못 찾아요"</p>
+    <div class="stage p-butter">
+      <div class="screen pf" id="pf">
+        <div class="top">AI 채팅<span>메모 앱</span></div>
+        <div class="app note" aria-label="AI가 만든 메모 화면">
+          <b>오늘 메모</b>
+          <p>장 볼 것: 우유, 달걀, 사과<br>주말엔 공원 한 바퀴 걷기<br>책 반납은 금요일까지</p>
+          <span class="save" aria-hidden="true">저장하기</span>
+          <span class="tag bad">커지기만 했어요</span>
+          <span class="tag good">찾기 쉬워졌어요</span>
+        </div>
+        <div class="gap"></div>
+        <div class="log" role="log" aria-live="polite">
+          <div class="msg me">저장 버튼 크게 해 줘</div>
+          <div class="msg ai">크게 바꿨어요!</div>
+        </div>
+        <button class="ask"><span>사람들이 저장 버튼을 못 찾아요</span><i class="go"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg></i></button>
+        <button class="again" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>처음부터 다시</button>
+      </div>
+      <span class="hint">보내기를 눌러 보세요</span>
+    </div>
+    <div class="say"><p>저장 버튼을 키워 달라는 게 아니라, 사람들이 저장 버튼을 못 찾는 게 문제야. 어떻게 고치면 좋을까?</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 2 Define the user -->
+  <section class="item rv" id="user">
+    <div class="num">02 / 06</div>
+    <h2 class="disp">Define<br>the user<span class="kr">사용자 정하기</span></h2>
+    <p class="what">누가 쓰는지 먼저 알려 줘요</p>
+    <p class="when">글씨 크기, 버튼, 말투가 달라져요 · "폰으로 보는 50대"</p>
+    <div class="stage p-sage">
+      <div class="screen du" id="du">
+        <div class="top">누가 쓰나요?<span>일정 앱</span></div>
+        <div class="seg" role="radiogroup" aria-label="쓰는 사람">
+          <button role="radio" aria-checked="true" data-u="0">안 정함<small>그냥 만들어 줘</small></button>
+          <button role="radio" aria-checked="false" data-u="1">50대<small>처음 써요</small></button>
+          <button role="radio" aria-checked="false" data-u="2">20대<small>매일 써요</small></button>
+        </div>
+        <div class="gap"></div>
+        <div class="log" role="log" aria-live="polite">
+          <div class="msg me" data-say>일정 앱 만들어 줘</div>
+        </div>
+        <div class="app cal u0" aria-label="AI가 만든 일정 화면">
+          <div class="hd">오늘 일정<small>11월 28일</small></div>
+          <div class="rws"></div>
+          <div class="add" aria-hidden="true">+</div>
+        </div>
+        <div class="log" style="margin-top:8px"><div class="msg ai" data-ai>기본 모양으로 만들었어요.</div></div>
+      </div>
+      <span class="hint">50대를 눌러 보세요</span>
+    </div>
+    <div class="say"><p>쓰는 사람은 폰으로 일정을 보는 50대 초보자야. 글씨와 버튼 크기, 말투를 여기에 맞춰 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 3 Questions first -->
+  <section class="item rv" id="questions">
+    <div class="num">03 / 06</div>
+    <h2 class="disp">Questions<br>first<span class="kr">질문부터</span></h2>
+    <p class="what">만들기 전에 AI가 먼저 묻게 해요</p>
+    <p class="when">새 화면, 새 프로젝트 · "만들기 전에 질문부터 해 줘"</p>
+    <div class="stage p-lav">
+      <div class="screen qf" id="qf">
+        <div class="top">AI 채팅<span>요가 수업 예약</span></div>
+        <div class="log" role="log" aria-live="polite">
+          <div class="msg me">요가 수업 예약 화면 만들어 줘. 만들기 전에 질문부터 해 줘.</div>
+          <div class="msg ai qcard">
+            <div class="qn">질문 <span data-qi>1</span> / 3</div>
+            <div class="qt" data-qt>누가 써요?</div>
+            <div class="qa"><button data-a="0">처음 오는 사람</button><button data-a="1">자주 오는 사람</button></div>
+            <div class="qbar" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+          </div>
+        </div>
+        <div class="ans" aria-label="답한 내용"><span class="ph">답한 내용이 여기 모여요</span></div>
+        <button class="again" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>처음부터 다시</button>
+      </div>
+      <span class="hint">답을 골라 보세요</span>
+    </div>
+    <div class="say"><p>바로 만들지 말고, 만들기 전에 꼭 필요한 질문 3개만 먼저 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 4 List assumptions -->
+  <section class="item rv" id="assumptions">
+    <div class="num">04 / 06</div>
+    <h2 class="disp">List<span class="kr">가정 꺼내기</span><br>assumptions</h2>
+    <p class="what">AI가 깔고 가는 가정을 꺼내요</p>
+    <p class="when">기획, 화면 설계 · 틀리면 위험한 것부터 확인</p>
+    <div class="stage p-lime">
+      <div class="screen la" id="la">
+        <div class="top">AI 채팅<span>사진 일기 앱</span></div>
+        <div class="feedc" aria-label="AI가 만든 글 카드">
+          <div class="ph"><svg class="pic" viewBox="0 0 220 74" preserveAspectRatio="xMidYMid slice"><rect width="220" height="74" fill="#D9D0F7"/><circle cx="168" cy="24" r="11" fill="#F3E7A8" stroke="#2B1416" stroke-width="2.2"/><path d="M0 74l52-40 34 26 30-20 104 34z" fill="#fff" stroke="#2B1416" stroke-width="2.2" stroke-linejoin="round"/></svg>
+            <svg class="broken" viewBox="0 0 30 30" fill="none" stroke="#2B141699" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="24" height="20" rx="3"/><path d="M3 19l6-6 5 5M17 15l3-3 7 7"/><path d="M4 4l22 22"/></svg></div>
+          <b>주말 산책</b><small>공원을 한 바퀴 돌았어요</small>
+          <q>"주말엔 공원을 한 바퀴 돌았어요. 바람이 좋았어요."</q>
+          <span class="tag bad">사진이 없으면?</span>
+          <span class="tag good">글 카드로 바꿨어요</span>
+        </div>
+        <div class="gap"></div>
+        <div class="log" role="log" aria-live="polite">
+          <div class="msg me">네가 깔고 간 가정을 적어 줘</div>
+          <div class="msg ai wide">이렇게 가정했어요. 눌러서 확인해 보세요.
+            <div class="asm">
+              <button data-k="0"><span class="n">1</span>로그인돼 있어요<span class="st">확인 전</span></button>
+              <button data-k="1" class="risk"><span class="n">2</span>사진이 늘 있어요<span class="st">먼저 확인</span></button>
+              <button data-k="2"><span class="n">3</span>글은 세 줄 이하예요<span class="st">확인 전</span></button>
+            </div>
+          </div>
+        </div>
+        <button class="again" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>처음부터 다시</button>
+      </div>
+      <span class="hint">2번을 눌러 보세요</span>
+    </div>
+    <div class="say"><p>만들기 전에 네가 깔고 가는 가정을 목록으로 적고, 틀리면 위험한 것부터 표시해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 5 Success criteria -->
+  <section class="item rv" id="criteria">
+    <div class="num">05 / 06</div>
+    <h2 class="disp">Success<br>criteria<span class="kr">성공 기준</span></h2>
+    <p class="what">잘됐는지 뭘 보고 알지 정해요</p>
+    <p class="when">가입, 결제, 예약 흐름 · "10명 중 7명이 끝까지"</p>
+    <div class="stage p-butter">
+      <div class="screen sc" id="sc">
+        <div class="top">가입 화면 테스트<span>예시</span></div>
+        <div class="crit">
+          <small>성공 기준</small>
+          <b>10명 중 7명이 끝까지 가입해요</b>
+          <div class="ppl" aria-hidden="true"></div>
+          <div class="c-meta"><span class="cnt" aria-live="polite">0 / 10명</span><span class="bd">아직 테스트 전</span></div>
+        </div>
+        <p class="fine">숫자는 설명을 위한 예시예요</p>
+        <div class="log" role="log" aria-live="polite"></div>
+        <button class="ask"><span>예시로 10명 테스트해 보기</span><i class="go"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg></i></button>
+        <button class="again" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>처음부터 다시</button>
+      </div>
+      <span class="hint">눌러 보세요</span>
+    </div>
+    <div class="say"><p>이 가입 화면의 성공 기준을 먼저 정해 줘. "10명 중 7명이 끝까지 가입"처럼 숫자로.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 6 Two directions -->
+  <section class="item rv" id="two">
+    <div class="num">06 / 06</div>
+    <h2 class="disp">Two<br>directions<span class="kr">두 가지 안</span></h2>
+    <p class="what">방향이 다른 두 안을 받아요</p>
+    <p class="when">첫 화면, 레이아웃, 색 · 비교해야 고를 수 있어요</p>
+    <div class="stage p-sage">
+      <div class="screen td" id="td">
+        <div class="top">AI 채팅<span>레시피 앱</span></div>
+        <div class="log">
+          <div class="msg me">첫 화면을 방향이 다른 두 안으로 보여 줘</div>
+          <div class="msg ai">두 안이 왔어요. 골라 주세요.</div>
+        </div>
+        <div class="duo" role="radiogroup" aria-label="두 가지 안">
+          <button role="radio" aria-checked="false" data-o="A"><span class="lbl">A · 목록<i></i></span>
+            <span class="mini" aria-hidden="true"><span class="lr"><i class="c1"></i><span>김치볶음밥 · 15분</span></span><span class="lr"><i class="c2"></i><span>토마토 파스타 · 20분</span></span><span class="lr"><i class="c3"></i><span>두부 샐러드 · 10분</span></span><span class="lr"><i class="c4"></i><span>달걀말이 · 10분</span></span></span></button>
+          <button role="radio" aria-checked="false" data-o="B"><span class="lbl">B · 카드<i></i></span>
+            <span class="mini grid" aria-hidden="true"><span class="cd"><i class="c2"></i><span>파스타</span></span><span class="cd"><i class="c1"></i><span>볶음밥</span></span><span class="cd"><i class="c3"></i><span>샐러드</span></span><span class="cd"><i class="c4"></i><span>달걀말이</span></span></span></button>
+        </div>
+        <div class="log after" role="log" aria-live="polite"></div>
+      </div>
+      <span class="hint">한 안을 골라 보세요</span>
+    </div>
+    <div class="say"><p>방향이 완전히 다른 두 가지 안을 보여 줘. 하나는 목록형, 하나는 카드형으로.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- All in one sentence -->
+  <h3 class="sec-h">한 문장으로 시키기</h3>
+  <section class="rv">
+    <h2 class="disp" style="font-size:clamp(40px,11vw,50px)">Say it<br>like <span class="v">this</span>.<span class="kr">이렇게 말해요</span></h2>
+    <div class="prompt">
+      <p class="bubble" id="all" data-type>만들기 전에 질문부터 해 줘. 문제는 "사람들이 저장을 못 찾아요"야. 쓰는 사람은 폰으로 보는 50대 초보자야. 네가 깔고 가는 가정도 적어 주고, 성공 기준을 정한 뒤 방향이 다른 두 가지 안을 보여 줘.</p>
+      <div class="row"><small>ChatGPT · Claude 어디든 돼요</small><button class="copy" data-copy="#all"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>문장 복사</span></button></div>
+    </div>
+    <ol class="steps">
+      <li>위 문장을 복사해요.</li>
+      <li>만들고 싶은 걸 한 줄 쓰고, 그 아래에 붙여 넣어요. "요가 수업 예약 화면 만들고 싶어."처럼요.</li>
+      <li>따옴표 안의 문제와 쓰는 사람만 내 상황으로 바꿔요.</li>
+    </ol>
+    <p class="note">AI가 질문하면 모르는 건 "잘 모르겠어, 추천해 줘."라고 답해도 괜찮아요.</p>
+  </section>
+
+  <footer class="foot rv">
+    <img class="bud" src="../assets/logo-bubble.svg" alt="">
+    <p>궁금한 건 DM으로 편하게 물어봐 주세요</p>
+    <a class="ig" href="https://www.instagram.com/ai_masterin30days/" rel="noopener">@ai_masterin30days 보러 가기</a>
+    <p class="meta">그림과 화면은 모두 직접 그렸어요 · 2026.11</p>
+  </footer>
+</main>
+
+<script src="../assets/guide.js"></script>
+<script>
+  // ---- Chat helpers (page-specific) ----
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = ms => new Promise(r => setTimeout(r, RM ? Math.min(ms, 200) : ms));
+  function add(log, who, html) { const m = document.createElement('div'); m.className = 'msg ' + who; m.innerHTML = html; log.append(m); return m; }
+  async function reply(log, html, ms = 950) {
+    const m = add(log, 'ai typing', '<span class="dots" aria-label="입력 중"><i></i><i></i><i></i></span>');
+    await wait(ms); m.classList.remove('typing'); m.innerHTML = html; return m;
+  }
+  // Remember a demo's start so "처음부터 다시" restores it
+  function snapshot(root) { const s = new Map(); root.querySelectorAll('.log').forEach(l => s.set(l, l.innerHTML)); return () => s.forEach((h, l) => l.innerHTML = h); }
+
+  // 1 Problem first
+  (() => {
+    const pf = document.getElementById('pf'), log = pf.querySelector('.log'), ask = pf.querySelector('.ask'), again = pf.querySelector('.again'), restore = snapshot(pf);
+    ask.addEventListener('click', async () => {
+      ask.disabled = true; add(log, 'me', '사람들이 저장 버튼을 못 찾아요'); ask.hidden = true;
+      await reply(log, '아, 문제는 크기가 아니라 자리네요. 글을 다 쓴 곳, <b class="hl">맨 아래에 고정</b>할게요.', 1100);
+      pf.classList.add('fixed'); again.hidden = false;
+    });
+    again.addEventListener('click', () => { pf.classList.remove('fixed'); restore(); again.hidden = true; ask.hidden = false; ask.disabled = false; ask.focus({preventScroll: true}); });
+  })();
+
+  // 2 Define the user: each choice re-renders the schedule
+  (() => {
+    const du = document.getElementById('du'), cal = du.querySelector('.cal'), rws = du.querySelector('.rws'), add_ = du.querySelector('.add'), say = du.querySelector('[data-say]'), ai = du.querySelector('[data-ai]');
+    const U = [
+      {say: '일정 앱 만들어 줘', ai: '기본 모양으로 만들었어요.', add: '+', rows: [['10:00', '병원'], ['14:00', '산책'], ['19:00', '저녁 약속']]},
+      {say: '쓰는 사람은 폰으로 보는 50대 초보자야', ai: '글씨를 키우고, 버튼은 크게, 말은 쉽게 바꿨어요.', add: '+ 일정 추가하기', rows: [['오전 10시', '병원 가기'], ['오후 2시', '산책하기']]},
+      {say: '매일 쓰는 20대 직장인이 써', ai: '한눈에 많이 보이게 촘촘하게 담았어요.', add: '+', rows: [['09:30', '팀 회의'], ['12:00', '점심'], ['14:00', '기획 리뷰'], ['18:30', '운동']]}
+    ];
+    let busy = 0;
+    async function set(i, first) {
+      const my = ++busy;
+      du.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-checked', b.dataset.u == i));
+      say.textContent = U[i].say; if (!first) { say.style.animation = 'none'; void say.offsetWidth; say.style.animation = ''; }
+      if (!first) { ai.classList.add('typing'); ai.innerHTML = '<span class="dots"><i></i><i></i><i></i></span>'; await wait(650); if (my !== busy) return; ai.classList.remove('typing'); }
+      ai.textContent = U[i].ai;
+      cal.className = 'app cal u' + i; add_.textContent = U[i].add;
+      rws.innerHTML = U[i].rows.map(r => `<div class="rw"><time>${r[0]}</time>${r[1]}</div>`).join('');
+    }
+    du.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => set(+b.dataset.u)));
+    set(0, true);
+  })();
+
+  // 3 Questions first: three questions, answers pile up, then the result is built from them
+  (() => {
+    const qf = document.getElementById('qf'), log = qf.querySelector('.log'), ans = qf.querySelector('.ans'), again = qf.querySelector('.again'), restore = snapshot(qf);
+    const Q = [['누가 써요?', '처음 오는 사람', '자주 오는 사람'], ['어디서 봐요?', '폰', '컴퓨터'], ['제일 중요한 건요?', '바로 예약', '수업 구경']];
+    let qi = 0, pick = [];
+    function bind() {
+      qf.querySelectorAll('.qa button').forEach(b => b.addEventListener('click', () => answer(+b.dataset.a)));
+    }
+    async function answer(a) {
+      const card = qf.querySelector('.qcard'); card.querySelectorAll('.qa button').forEach(b => b.disabled = true);
+      pick.push(a); const txt = Q[qi][1 + a];
+      if (qi === 0) ans.innerHTML = '';
+      ans.insertAdjacentHTML('beforeend', `<span>${txt}</span>`);
+      qi++;
+      if (qi < 3) {
+        await wait(350);
+        card.querySelector('[data-qi]').textContent = qi + 1;
+        const qt = card.querySelector('[data-qt]'); qt.textContent = Q[qi][0]; qt.style.animation = 'none'; void qt.offsetWidth; qt.style.animation = '';
+        card.querySelectorAll('.qa button').forEach((b, k) => { b.textContent = Q[qi][1 + k]; b.disabled = false; });
+        card.querySelectorAll('.qbar i').forEach((x, k) => x.classList.toggle('on', k <= qi));
+        card.querySelector('.qa button').focus({preventScroll: true});
+        return;
+      }
+      card.remove();
+      const cls = [pick[0] ? 'pro' : 'easy', pick[1] ? 'pc' : 'phone', pick[2] ? 'look' : 'book'].join(' ');
+      const body = pick[2]
+        ? `<div class="gal"><i></i><i></i><i></i><i></i></div><div class="rh">${pick[0] ? '지난번 수업 다시 보기' : '처음이면 입문반부터 봐요'}</div>`
+        : `<div class="times"><i>오전 10시</i><i>오후 7시</i><i>오후 8시</i></div><div class="cta">${pick[0] ? '지난번처럼 예약' : '예약하기'}</div>`;
+      await reply(log, `이제 만들게요. 답한 내용대로요.<div class="res ${cls}"><div class="frame"><div class="rt">${pick[0] ? '이번 주 요가' : '처음 오셨나요?'}</div><div class="rh">${pick[0] ? '자주 가는 수업' : '입문반 · 60분'}</div>${body}</div></div>`, 1100);
+      log.lastElementChild.classList.add('wide');
+      again.hidden = false;
+    }
+    again.addEventListener('click', () => { restore(); qi = 0; pick = []; ans.innerHTML = '<span class="ph">답한 내용이 여기 모여요</span>'; again.hidden = true; bind(); qf.querySelector('.qa button').focus({preventScroll: true}); });
+    bind();
+  })();
+
+  // 4 List assumptions: 1 and 3 hold; 2 breaks the screen, then the AI fixes it
+  (() => {
+    const la = document.getElementById('la'), log = la.querySelector('.log'), again = la.querySelector('.again'), restore = snapshot(la);
+    let busy = false;
+    function bind() {
+      la.querySelectorAll('.asm button').forEach(b => b.addEventListener('click', async () => {
+        if (busy || b.classList.contains('ok')) return;
+        const st = b.querySelector('.st');
+        if (b.dataset.k !== '1') { b.classList.add('ok'); st.textContent = '맞아요'; return; }
+        busy = true; la.classList.add('nophoto'); st.textContent = '확인 중';
+        await wait(900);
+        await reply(log, '사진이 없으면 화면에 구멍이 나네요. <b class="hl">사진이 없을 땐 글 카드</b>로 보여 줄게요.', 1000);
+        la.classList.remove('nophoto'); la.classList.add('fixed'); b.classList.add('ok'); st.textContent = '고쳤어요';
+        busy = false; again.hidden = false;
+      }));
+    }
+    again.addEventListener('click', () => { la.classList.remove('nophoto', 'fixed'); restore(); again.hidden = true; bind(); la.querySelector('.asm .risk').focus({preventScroll: true}); });
+    bind();
+  })();
+
+  // 5 Success criteria: round 1 misses the bar, AI changes one thing, round 2 makes it
+  (() => {
+    const sc = document.getElementById('sc'), ppl = sc.querySelector('.ppl'), cnt = sc.querySelector('.cnt'), bd = sc.querySelector('.bd'),
+          log = sc.querySelector('.log'), ask = sc.querySelector('.ask'), again = sc.querySelector('.again');
+    const person = '<svg viewBox="0 0 18 24"><circle cx="9" cy="6" r="4.4"/><path d="M1.5 23v-4.5a7.5 7.5 0 0 1 15 0V23z"/></svg>';
+    ppl.innerHTML = Array.from({length: 10}, () => `<i>${person}</i>`).join('');
+    const ps = ppl.querySelectorAll('i');
+    let round = 0;
+    async function run(n) {
+      ps.forEach(p => p.classList.remove('in')); cnt.textContent = '0 / 10명'; bd.textContent = '테스트 중';
+      for (let k = 0; k < n; k++) { await wait(220); ps[k].classList.add('in'); cnt.textContent = `${k + 1} / 10명`; }
+    }
+    ask.addEventListener('click', async () => {
+      ask.disabled = true;
+      if (round === 0) {
+        await run(5); sc.classList.add('short'); bd.textContent = '기준까지 2명 모자라요';
+        await reply(log, '가입 단계가 길어서 중간에 나가요. <b class="hl">3단계를 2단계로</b> 줄여 볼게요.', 1000);
+        ask.querySelector('span').textContent = '줄인 화면으로 다시 테스트'; ask.disabled = false; round = 1;
+      } else {
+        log.innerHTML = ''; sc.classList.remove('short'); ask.hidden = true;
+        await run(8); sc.classList.add('win'); bd.textContent = '기준 달성 ✓';
+        await reply(log, '10명 중 8명이 끝까지 갔어요. <b class="hl">기준을 넘었으니</b> 이 화면으로 갈게요.', 800);
+        ask.hidden = true; again.hidden = false; round = 2;
+      }
+    });
+    again.addEventListener('click', () => { sc.classList.remove('short', 'win'); ps.forEach(p => p.classList.remove('in')); cnt.textContent = '0 / 10명'; bd.textContent = '아직 테스트 전'; log.innerHTML = ''; ask.querySelector('span').textContent = '예시로 10명 테스트해 보기'; ask.hidden = false; ask.disabled = false; again.hidden = true; round = 0; ask.focus({preventScroll: true}); });
+  })();
+
+  // 6 Two directions: the chosen option grows, the other steps back
+  (() => {
+    const td = document.getElementById('td'), duo = td.querySelector('.duo'), log = td.querySelector('.log.after');
+    let me = null;
+    duo.querySelectorAll('button').forEach(b => b.addEventListener('click', async () => {
+      duo.querySelectorAll('button').forEach(x => x.setAttribute('aria-checked', x === b)); duo.classList.add('picked');
+      const o = b.dataset.o;
+      if (!me) { me = add(log, 'me', ''); }
+      me.textContent = `${o}안으로 할게요`;
+      log.querySelectorAll('.ai').forEach(x => x.remove());
+      await reply(log, o === 'A' ? '좋아요. <b class="hl">A안 목록형</b>으로 이어서 만들게요. 시간 순으로 찾기 쉬워요.' : '좋아요. <b class="hl">B안 카드형</b>으로 이어서 만들게요. 사진으로 고르기 쉬워요.', 800);
+    }));
+  })();
+</script>
+</body>
+</html>

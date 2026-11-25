@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="1080" height="1080">
+  <!-- Account logo "Bubble buddy" (2026-11-23): lavender ground, white chat bubble with a face, two butter sparkles.
+       Bubble scaled down and moved left/down so the sparkles have room inside the circle crop. -->
+  <rect width="400" height="400" fill="#D9D0F7"/>
+  <g transform="translate(-16 16) translate(200 200) scale(.9) translate(-200 -200)">
+    <path d="M120 96h160a54 54 0 0 1 54 54v84a54 54 0 0 1-54 54h-82l-58 46v-46h-20a54 54 0 0 1-54-54v-84a54 54 0 0 1 54-54z" fill="#fff" stroke="#2B1416" stroke-width="13" stroke-linejoin="round"/>
+    <g transform="translate(200 194) scale(2)">
+      <ellipse cx="-17" cy="-6" rx="8" ry="11" fill="#2B1416"/>
+      <ellipse cx="17" cy="-6" rx="8" ry="11" fill="#2B1416"/>
+      <circle cx="-14" cy="-10" r="3" fill="#fff"/>
+      <circle cx="20" cy="-10" r="3" fill="#fff"/>
+      <path d="M-11 13q11 10 22 0" fill="none" stroke="#2B1416" stroke-width="7" stroke-linecap="round"/>
+    </g>
+  </g>
+  <path transform="translate(316 98) scale(.8)" d="M0-50C7-13 13-7 50 0 13 7 7 13 0 50-7 13-13 7-50 0-13-7-7-13 0-50Z" fill="#F3E7A8" stroke="#2B1416" stroke-width="13" stroke-linejoin="round"/>
+  <path transform="translate(360 178) scale(.38)" d="M0-50C7-13 13-7 50 0 13 7 7 13 0 50-7 13-13 7-50 0-13-7-7-13 0-50Z" fill="#F3E7A8" stroke="#2B1416" stroke-width="24" stroke-linejoin="round"/>
+</svg>

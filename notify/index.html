@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>알림 이름 6개 · ai_masterin30days</title>
+<meta name="description" content="토스트, 배너, 배지, 인라인 메시지, 팝오버, 푸시. 알림에도 이름이 있어요. 이름으로 말하면 AI가 딱 맞는 걸 만들어요.">
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="../assets/logo-bubble.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../assets/guide.css">
+<style>
+  /* ---- Page-specific live demos (notify) ---- */
+  .pill-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 99px; padding: 10px 14px; font: 700 13.5px/1 var(--ko); transition: transform .25s var(--spring), background .3s var(--ease), color .3s, opacity .3s; }
+  .pill-btn:active { transform: scale(.94); }
+  .pill-btn svg { width: 15px; height: 15px; flex: none; }
+
+  /* 1 Toast: pops up, counts down, slides away */
+  .to-note { background: var(--cream); border-radius: 16px; padding: 14px 14px 12px; }
+  .to-note b { display: block; font: 700 15px/1.2 var(--ko); }
+  .to-note small { font-size: 12px; color: var(--mute); }
+  .to-note ul { list-style: none; margin-top: 10px; display: grid; gap: 7px; }
+  .to-note li { display: flex; align-items: center; gap: 9px; font: 600 13.5px/1.2 var(--ko); }
+  .to-note li::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 6px; border: 1.6px solid var(--plum); background: var(--white); }
+  .to-note li.dn { color: var(--mute); text-decoration: line-through; text-decoration-color: #2B141666; }
+  .to-note li.dn::before { background: var(--plum) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.3l2.2 2.1 4.6-4.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; }
+  .to-act { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; padding-bottom: 62px; }
+  .to-act .pill-btn { background: var(--cream); }
+  .to-act .pill-btn:first-child { background: var(--plum); color: var(--white); }
+  .to-toast { position: absolute; left: 50%; bottom: 16px; width: calc(100% - 36px); display: flex; align-items: center; gap: 10px; background: var(--plum); color: var(--white); border-radius: 16px; padding: 12px 14px; font: 700 13.5px/1.2 var(--ko); overflow: hidden; box-shadow: 0 14px 30px -12px #2B1416B3; transform: translate(-50%, 140%) scale(.9); opacity: 0; transition: transform .5s var(--spring), opacity .25s; }
+  .to-toast.on { transform: translate(-50%, 0); opacity: 1; }
+  .to-toast .ck { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sage); display: grid; place-items: center; }
+  .to-toast .ck svg { width: 13px; height: 13px; }
+  .to-toast .sec { margin-left: auto; font: 600 11.5px/1 var(--ko); color: #F7F4EE99; font-variant-numeric: tabular-nums; }
+  .to-toast .bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--lime); transform-origin: 0 50%; }
+  .to-toast.on .bar { animation: drain 2.6s linear forwards; }
+  @keyframes drain { to { transform: scaleX(0); } }
+  .to-ghost { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; font: 600 12px/1 var(--ko); color: #2B141666; opacity: 0; transition: opacity .4s .3s; }
+  .to.gone .to-ghost { opacity: 1; }
+
+  /* 2 Banner: offline banner -> reconnected -> folds away, inbox comes alive */
+  .ba .top { align-items: center; }
+  .ba-wifi { width: 34px; height: 34px; margin: -8px -6px -8px 0; border-radius: 50%; display: grid; place-items: center; transition: background .3s; }
+  .ba-wifi svg { width: 20px; height: 20px; }
+  .ba-wifi .sl { transition: opacity .3s; }
+  .ba:not(.off) .ba-wifi .sl { opacity: 0; }
+  .ba-banner { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .5s var(--ease), margin .5s var(--ease); margin-bottom: 10px; }
+  .ba-banner > div { overflow: hidden; }
+  .ba-banner .in { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 10px 10px 10px 12px; background: var(--plum); color: var(--white); font: 700 13px/1.3 var(--ko); transition: background .4s var(--ease), color .4s; }
+  .ba-banner .sp { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2.2px solid #F7F4EE40; border-top-color: var(--butter); animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ba-banner .ok { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--plum); display: none; place-items: center; }
+  .ba-banner .ok svg { width: 11px; height: 11px; }
+  .ba-banner .m { flex: 1; }
+  .ba-banner .pill-btn { background: var(--butter); color: var(--plum); padding: 8px 11px; font-size: 12.5px; }
+  .ba:not(.off) .ba-banner .in { background: var(--sage); color: var(--plum); }
+  .ba:not(.off) .ba-banner .sp, .ba:not(.off) .ba-banner .pill-btn { display: none; }
+  .ba:not(.off) .ba-banner .ok { display: grid; }
+  .ba.fold .ba-banner { grid-template-rows: 0fr; margin-bottom: 0; }
+  .ba-list { list-style: none; display: grid; transition: filter .5s, opacity .5s; }
+  .ba.off .ba-list { opacity: .42; filter: grayscale(1); }
+  .ba-list li { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .55s var(--spring), opacity .4s; }
+  .ba-list li > div { overflow: hidden; display: flex; align-items: center; gap: 11px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .ba-list li:first-child > div { border-top: 0; }
+  .ba-list .ic { flex: none; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; border: 1.5px solid var(--plum); }
+  .ba-list .ic svg { width: 17px; height: 17px; }
+  .ba-list .tx { flex: 1; min-width: 0; }
+  .ba-list b { display: flex; justify-content: space-between; font: 700 13.5px/1.2 var(--ko); }
+  .ba-list b time { font: 500 11.5px/1.2 var(--ko); color: var(--mute); }
+  .ba-list small { display: block; margin-top: 3px; font: 500 12.5px/1.3 var(--ko); color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ba-list li.new { grid-template-rows: 0fr; opacity: 0; }
+  .ba-list li.new.in { grid-template-rows: 1fr; opacity: 1; }
+  .ba-list li.new .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--violet); flex: none; }
+  .ba-list li.new b { color: var(--plum); }
+
+  /* 3 Badge: tap add -> dot flies to the cart -> number pops; open the cart -> badge clears */
+  .bd { padding-bottom: 0; }
+  .bd-view { min-height: 196px; }
+  .bd-view[hidden] { display: none; }
+  .bd-prod { display: flex; gap: 12px; align-items: center; background: var(--cream); border-radius: 16px; padding: 12px; }
+  .bd-prod svg { width: 76px; height: 76px; flex: none; }
+  .bd-prod b { display: block; font: 700 14.5px/1.25 var(--ko); }
+  .bd-prod small { display: block; margin-top: 3px; font-size: 12px; color: var(--mute); line-height: 1.35; }
+  .bd-add { margin-top: 12px; width: 100%; background: var(--plum); color: var(--white); }
+  .bd-cart { list-style: none; display: grid; gap: 7px; }
+  .bd-cart li { display: flex; align-items: center; gap: 10px; background: var(--cream); border-radius: 12px; padding: 8px 10px; font: 700 13px/1.2 var(--ko); animation: bpop .45s var(--spring) both; }
+  .bd-cart li svg { width: 30px; height: 30px; flex: none; }
+  .bd-cart li span { margin-left: auto; font: 600 12px/1 var(--ko); color: var(--mute); }
+  .bd-empty { font: 600 13.5px/1.5 var(--ko); color: var(--mute); padding: 26px 0; text-align: center; }
+  .bd-tabs { display: grid; grid-template-columns: repeat(4, 1fr); margin: 14px -18px 0; padding: 8px 6px 10px; border-top: 1px solid var(--line); background: var(--white); }
+  .bd-tabs button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; font: 700 11px/1 var(--ko); color: var(--mute); transition: color .3s; }
+  .bd-tabs button svg { width: 22px; height: 22px; }
+  .bd-tabs button[aria-selected="true"] { color: var(--plum); }
+  .bd-badge { position: absolute; top: -2px; left: calc(50% + 4px); min-width: 19px; height: 19px; border-radius: 99px; padding: 0 5px; background: var(--violet); color: var(--white); border: 2px solid var(--white); font: 700 11px/15px var(--disp); text-align: center; transform: scale(0); transition: transform .4s var(--spring); }
+  .bd-badge.on { transform: scale(1); }
+  .bd-badge.bump { animation: bump .5s var(--spring); }
+  @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.5); } 100% { transform: scale(1); } }
+  .bd-fly { position: absolute; z-index: 3; width: 14px; height: 14px; border-radius: 50%; background: var(--violet); pointer-events: none; }
+  @keyframes bpop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+  /* 4 Inline message: right under the field, live */
+  .in-l { display: block; font: 700 13px/1 var(--ko); color: var(--mute); margin-bottom: 7px; }
+  .in-f { position: relative; }
+  .in-f input { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 40px 12px 13px; font: 600 16px/1.2 var(--ko); color: var(--plum); background: var(--white); letter-spacing: -0.01em; transition: border-color .3s, background .3s, box-shadow .3s; }
+  .in-f input:focus { outline: none; box-shadow: 0 0 0 3px #8C6BE659; }
+  .in-f .st { position: absolute; right: 12px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%; display: grid; place-items: center; transform: scale(0); transition: transform .4s var(--spring), background .3s; }
+  .in-f .st svg { width: 12px; height: 12px; }
+  .in.err .in-f input { border: 2px solid var(--plum); background: #F3E7A859; }
+  .in.ok .in-f input { border: 2px solid #6E9A62; }
+  .in.ok .in-f .st { transform: scale(1); background: var(--sage); }
+  .in-msg { display: flex; align-items: center; gap: 6px; margin-top: 7px; min-height: 20px; font: 700 12.5px/1.3 var(--ko); }
+  .in-msg .ic { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font: 800 11px/1 var(--disp); }
+  .in.err .in-msg .ic { background: var(--butter); border: 1.5px solid var(--plum); }
+  .in.ok .in-msg .ic { background: var(--sage); }
+  .in-msg .b, .in.ok .in-msg .a { display: none; } .in.ok .in-msg .b { display: inline; }
+  .in.ok .in-msg .ic::before { content: "✓"; } .in.err .in-msg .ic::before { content: "!"; }
+  .in.shake .in-f, .in.shake .in-msg { animation: shake .4s var(--ease); }
+  @keyframes shake { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+  .in-sug { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; border-radius: 99px; padding: 7px 11px; background: var(--lav); font: 700 12.5px/1 var(--ko); transition: opacity .3s, transform .4s var(--spring); }
+  .in-sug svg { width: 13px; height: 13px; }
+  .in-sug { max-height: 40px; overflow: hidden; transition: opacity .3s, transform .4s var(--spring), max-height .4s var(--ease), margin .4s, padding .4s; }
+  .in.ok .in-sug { opacity: 0; transform: scale(.8); pointer-events: none; max-height: 0; margin-top: 0; padding-top: 0; padding-bottom: 0; }
+  .in-pw { margin-top: 14px; }
+  .in-pw .fake { border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 13px; font: 600 15px/1.2 var(--ko); letter-spacing: .1em; color: var(--plum); }
+  .in-next { margin-top: 14px; width: 100%; background: var(--cream); color: #2B141673; padding: 13px; font-size: 14px; }
+  .in.ok .in-next { background: var(--plum); color: var(--white); }
+
+  /* 5 Popover: opens from the tapped ⋯, the rest steps back */
+  .screen.po { min-height: 304px; }
+  .po-list { list-style: none; display: grid; gap: 4px; }
+  .po-list li { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .5s var(--spring), opacity .35s; }
+  .po-list li > div { overflow: hidden; display: flex; align-items: center; gap: 11px; padding: 6px 0; transition: opacity .35s; }
+  .po-list .th { flex: none; width: 46px; height: 46px; border-radius: 12px; overflow: hidden; }
+  .po-list .th svg { width: 100%; height: 100%; }
+  .po-list .tx { flex: 1; min-width: 0; }
+  .po-list b { display: block; font: 700 14px/1.2 var(--ko); }
+  .po-list b span { display: inline-block; }
+  .po-list b span.swap { animation: bpop .45s var(--spring); }
+  .po-list small { display: flex; gap: 6px; align-items: center; margin-top: 4px; font: 500 12px/1 var(--ko); color: var(--mute); }
+  .po-list small em { font-style: normal; font-weight: 700; color: var(--plum); background: var(--sage); border-radius: 99px; padding: 3px 7px; animation: bpop .45s var(--spring); }
+  .po-more { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; transition: background .25s; }
+  .po-more svg { width: 18px; height: 18px; }
+  .po-more[aria-expanded="true"] { background: var(--plum); color: var(--white); }
+  .po.open .po-list li:not(.act) > div { opacity: .32; }
+  .po-list li.del { grid-template-rows: 0fr; opacity: 0; }
+  .po-pop { position: absolute; right: 16px; z-index: 3; width: 168px; background: var(--white); border-radius: 16px; padding: 6px; box-shadow: 0 20px 40px -14px #2B141699, 0 0 0 1px var(--line); opacity: 0; transform: translateY(-6px) scale(.85); transform-origin: calc(100% - 18px) 0; transition: opacity .2s, transform .45s var(--spring), top .35s var(--ease); pointer-events: none; }
+  .po-pop.on { opacity: 1; transform: none; pointer-events: auto; }
+  .po-pop.up { transform-origin: calc(100% - 18px) 100%; }
+  .po-pop.up::before { top: auto; bottom: -6px; box-shadow: 1px 1px 0 var(--line); }
+  .po-pop::before { content: ""; position: absolute; right: 13px; top: -6px; width: 12px; height: 12px; background: var(--white); transform: rotate(45deg); border-radius: 2px; box-shadow: -1px -1px 0 var(--line); }
+  .po-pop button { position: relative; width: 100%; display: flex; align-items: center; gap: 9px; border-radius: 11px; padding: 10px; font: 700 13.5px/1 var(--ko); text-align: left; transition: background .2s; }
+  .po-pop button:hover { background: var(--cream); }
+  .po-pop button svg { width: 16px; height: 16px; flex: none; }
+  .po-pop .dl { color: #A03A2C; }
+
+  /* 6 Push: lock screen wakes, notification drops in from the top */
+  .screen.pu { background: #1E0D0F; color: var(--cream); padding: 16px 14px 14px; min-height: 380px; display: flex; flex-direction: column; transition: background .6s var(--ease); }
+  .pu.wake { background: var(--plum); }
+  .pu-lock { display: flex; justify-content: center; opacity: .7; }
+  .pu-lock svg { width: 16px; height: 16px; }
+  .pu-date { text-align: center; margin-top: 8px; font: 600 13px/1 var(--ko); color: #F7F4EEB3; }
+  .pu-time { text-align: center; font: 600 64px/1 var(--disp); letter-spacing: -0.02em; margin-top: 4px; opacity: .55; transition: opacity .6s var(--ease); }
+  .pu.wake .pu-time { opacity: 1; }
+  .pu-stack { display: grid; gap: 8px; margin-top: 16px; }
+  .pu-n { display: block; width: 100%; text-align: left; background: #F7F4EEEB; color: var(--plum); border-radius: 18px; padding: 11px 12px; box-shadow: 0 10px 24px -14px #000; transition: transform .25s var(--spring); }
+  .pu-n:active { transform: scale(.97); }
+  .pu-n .h { display: flex; align-items: center; gap: 8px; font: 700 12.5px/1 var(--ko); }
+  .pu-n .h i { flex: none; width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; border: 1.4px solid var(--plum); }
+  .pu-n .h i svg { width: 12px; height: 12px; }
+  .pu-n .h time { margin-left: auto; font: 500 11px/1 var(--ko); color: var(--mute); }
+  .pu-n p { margin-top: 7px; font: 600 13.5px/1.4 var(--ko); }
+  .pu-n .x { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--spring); }
+  .pu-n .x > span { overflow: hidden; }
+  .pu-n .x b { display: inline-flex; margin-top: 9px; border-radius: 99px; padding: 8px 12px; background: var(--plum); color: var(--white); font: 700 12px/1 var(--ko); }
+  .pu-n[aria-expanded="true"] .x { grid-template-rows: 1fr; }
+  .pu-n.new { display: none; }
+  .pu-n.new.in { display: block; animation: drop .7s var(--spring) both; }
+  @keyframes drop { 0% { transform: translateY(-120px) scale(.9); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  .pu-foot { margin-top: auto; padding-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .pu-foot small { font: 600 11.5px/1.3 var(--ko); color: #F7F4EE99; display: flex; align-items: center; gap: 6px; }
+  .pu-foot small::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #F7F4EE66; }
+  .pu-foot .pill-btn { background: var(--butter); color: var(--plum); padding: 9px 12px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="brand"><img src="../assets/logo-bubble.svg" alt="">ai_masterin30days<span>무료 가이드</span></div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="eyebrow"><i></i>UI × AI 가이드</span>
+    <h1 class="disp">Stop saying<span class="in">“<span class="v">popup</span>”.<span class="kr">알림 이름</span></span></h1>
+    <p class="lead">"팝업 띄워 줘"라고만 하면 AI도 뭘 띄울지 헷갈려요.<br>
+      토스트, 배너, 배지, 인라인 메시지, 팝오버, 푸시.<br>
+      <b>알림 이름 6개면 딱 맞는 걸 시킬 수 있어요.</b></p>
+    <nav class="fan" aria-label="6개 바로 가기">
+      <a class="chip" href="#toast"><span class="g"><svg width="34" height="26" viewBox="0 0 34 26"><rect x="1" y="1" width="32" height="24" rx="5" fill="#F7F4EE"/><rect x="4" y="15" width="26" height="8" rx="4" fill="#2B1416"/><circle cx="8.5" cy="19" r="2" fill="#C9DEC2"/><rect x="12.5" y="18" width="13" height="2" rx="1" fill="#fff"/></svg></span>Toast<small>토스트</small></a>
+      <a class="chip" href="#banner"><span class="g"><svg width="34" height="26" viewBox="0 0 34 26"><rect x="1" y="1" width="32" height="24" rx="5" fill="#F7F4EE"/><rect x="1" y="1" width="32" height="8" rx="4" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.4"/><rect x="5" y="13" width="18" height="2.4" rx="1.2" fill="#2B141640"/><rect x="5" y="18.5" width="12" height="2.4" rx="1.2" fill="#2B141640"/></svg></span>Banner<small>배너</small></a>
+      <a class="chip" href="#badge"><span class="g"><svg width="32" height="28" viewBox="0 0 32 28"><path d="M5 9h18l-2 12H7z" fill="#fff" stroke="#2B1416" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 9V7a4 4 0 0 1 8 0v2" fill="none" stroke="#2B1416" stroke-width="1.7"/><circle cx="24" cy="7" r="6.4" fill="#8C6BE6" stroke="#fff" stroke-width="1.6"/><text x="24" y="10" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="9" font-weight="700" fill="#fff">3</text></svg></span>Badge<small>배지</small></a>
+      <a class="chip" href="#inline"><span class="g"><svg width="34" height="26" viewBox="0 0 34 26"><rect x="1" y="2" width="32" height="12" rx="4" fill="#fff" stroke="#2B1416" stroke-width="1.8"/><rect x="5" y="7" width="14" height="2.4" rx="1.2" fill="#2B1416"/><circle cx="5.5" cy="21" r="3.6" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.3"/><rect x="11" y="19.8" width="17" height="2.4" rx="1.2" fill="#2B1416"/></svg></span>Inline message<small>인라인 메시지</small></a>
+      <a class="chip" href="#popover"><span class="g"><svg width="30" height="28" viewBox="0 0 30 28"><circle cx="24" cy="4" r="3.4" fill="#2B1416"/><path d="M5 9h20a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3z" fill="#fff" stroke="#2B1416" stroke-width="1.6"/><rect x="6" y="14" width="13" height="2.2" rx="1.1" fill="#2B1416"/><rect x="6" y="19.5" width="9" height="2.2" rx="1.1" fill="#2B141666"/></svg></span>Popover<small>팝오버</small></a>
+      <a class="chip" href="#push"><span class="g"><svg width="24" height="30" viewBox="0 0 24 30"><rect x="1" y="1" width="22" height="28" rx="5" fill="#2B1416"/><rect x="3.5" y="6" width="17" height="7" rx="3" fill="#F7F4EE"/><circle cx="7" cy="9.5" r="1.8" fill="#DDE78E"/><rect x="10" y="8.6" width="8" height="1.8" rx=".9" fill="#2B1416"/></svg></span>Push<small>푸시 알림</small></a>
+    </nav>
+  </header>
+
+  <h3 class="sec-h">직접 눌러 보세요 · 6개</h3>
+
+  <!-- 1 Toast -->
+  <section class="item rv" id="toast">
+    <div class="num">01 / 06</div>
+    <h2 class="disp">Toast<span class="kr">토스트</span></h2>
+    <p class="what">잠깐 떴다가 사라지는 알림</p>
+    <p class="when">저장, 복사처럼 가벼운 소식 · 메모 앱, 쇼핑 앱</p>
+    <div class="stage p-lime">
+      <div class="screen to" id="to">
+        <div class="top">여행 메모<span>방금 수정</span></div>
+        <div class="to-note">
+          <b>주말 바다 여행</b><small>할 일 3개 중 2개 끝</small>
+          <ul><li class="dn">기차표 예매</li><li class="dn">숙소 확인</li><li>맛집 찾기</li></ul>
+        </div>
+        <div class="to-act">
+          <button class="pill-btn" data-t="링크를 복사했어요"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 9.5a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.8.8"/><path d="M9 6.5a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.8-.8"/></svg>링크 복사</button>
+          <button class="pill-btn" data-t="메모를 저장했어요"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 2.5h8l2.5 2.5v8.5H3z"/><path d="M5.5 2.5v3.5h5V2.5M5.5 13.5V9.5h5v4"/></svg>저장</button>
+        </div>
+        <div class="to-toast" role="status" aria-live="polite"><span class="ck"><svg viewBox="0 0 12 12" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></span><span class="m">링크를 복사했어요</span><span class="sec" aria-hidden="true">3</span><i class="bar"></i></div>
+        <p class="to-ghost" aria-hidden="true">토스트는 알아서 사라졌어요</p>
+      </div>
+      <span class="hint">눌러 보세요</span>
+    </div>
+    <div class="say"><p>저장 버튼을 누르면 "저장했어요" 토스트를 아래에 3초만 보여 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 2 Banner -->
+  <section class="item rv" id="banner">
+    <div class="num">02 / 06</div>
+    <h2 class="disp">Banner<span class="kr">배너</span></h2>
+    <p class="what">화면 위에 머무는 안내</p>
+    <p class="when">연결 끊김, 점검 공지처럼 계속 알아야 할 것 · 해결되면 사라져요</p>
+    <div class="stage p-butter">
+      <div class="screen ba off" id="ba">
+        <div class="top">받은 편지함<button class="ba-wifi" aria-pressed="false" aria-label="인터넷 연결 끊기·켜기"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 8a11 11 0 0 1 15 0M5 11a7.2 7.2 0 0 1 10 0M7.6 13.9a3.4 3.4 0 0 1 4.8 0"/><circle cx="10" cy="16.4" r=".6" fill="currentColor"/><path class="sl" d="M3 3l14 14" stroke-width="2"/></svg></button></div>
+        <div class="ba-banner" role="status" aria-live="polite"><div><div class="in"><span class="sp" aria-hidden="true"></span><span class="ok" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></span><span class="m">연결이 끊겼어요</span><button class="pill-btn" data-retry>다시 연결</button></div></div></div>
+        <ul class="ba-list">
+          <li class="new"><div><span class="ic" style="background:var(--lime)"><svg viewBox="0 0 18 18" fill="none" stroke="#2B1416" stroke-width="1.6" stroke-linejoin="round"><rect x="2" y="3.5" width="14" height="11" rx="2.5"/><circle cx="6.5" cy="7.5" r="1.4"/><path d="M2.5 13l4-3.5 3 2.5 2.5-2 3.5 3"/></svg></span><span class="tx"><b>공유 앨범<time>방금</time></b><small>새 사진 12장이 올라왔어요</small></span><span class="dot" aria-label="새 메일"></span></div></li>
+          <li><div><span class="ic" style="background:var(--lav)"><svg viewBox="0 0 18 18" fill="none" stroke="#2B1416" stroke-width="1.6"><circle cx="6.5" cy="7" r="2.3"/><circle cx="12" cy="7.5" r="1.8"/><path d="M2.5 14c.6-2.6 2.2-3.8 4-3.8s3.4 1.2 4 3.8M10.8 11c1.8-.4 3.6.6 4.2 3"/></svg></span><span class="tx"><b>모임방<time>9:12</time></b><small>토요일 모임 장소가 바뀌었어요</small></span></div></li>
+          <li><div><span class="ic" style="background:var(--sage)"><svg viewBox="0 0 18 18" fill="none" stroke="#2B1416" stroke-width="1.6" stroke-linejoin="round"><path d="M2 6l7-3.5L16 6v6.5L9 16l-7-3.5z"/><path d="M2 6l7 3.5L16 6M9 9.5V16"/></svg></span><span class="tx"><b>쇼핑몰<time>어제</time></b><small>주문하신 상품이 출발했어요</small></span></div></li>
+          <li><div><span class="ic" style="background:var(--butter)"><svg viewBox="0 0 18 18" fill="none" stroke="#2B1416" stroke-width="1.6" stroke-linejoin="round"><rect x="2.5" y="3" width="13" height="12" rx="2"/><path d="M5.5 6.5h7M5.5 9.5h7M5.5 12.5h4"/></svg></span><span class="tx"><b>뉴스레터<time>월</time></b><small>이번 주에 읽을 거리 세 가지</small></span></div></li>
+        </ul>
+      </div>
+      <span class="hint">다시 연결을 눌러 보세요</span>
+    </div>
+    <div class="say"><p>인터넷이 끊기면 화면 위에 배너로 알려 주고, 다시 연결되면 배너가 사라지게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 3 Badge -->
+  <section class="item rv" id="badge">
+    <div class="num">03 / 06</div>
+    <h2 class="disp">Badge<span class="kr">배지</span></h2>
+    <p class="what">숫자로 알려 주는 작은 표시</p>
+    <p class="when">새 메시지, 장바구니 개수 · 탭이나 아이콘 위</p>
+    <div class="stage p-sage">
+      <div class="screen bd" id="bd">
+        <div class="bd-view" data-view="0">
+          <div class="top">원두 가게<span>오늘의 추천</span></div>
+          <div class="bd-prod">
+            <svg viewBox="0 0 76 76" aria-hidden="true"><rect width="76" height="76" rx="16" fill="#F3E7A8"/><path d="M22 22h32l-3 40H25z" fill="#fff" stroke="#2B1416" stroke-width="2.4" stroke-linejoin="round"/><path d="M22 22l4-7h24l4 7" fill="#D9D0F7" stroke="#2B1416" stroke-width="2.4" stroke-linejoin="round"/><ellipse cx="38" cy="42" rx="7" ry="9.5" fill="#C9DEC2" stroke="#2B1416" stroke-width="2.2" transform="rotate(20 38 42)"/><path d="M35 34c4 4 4 12 1 17" fill="none" stroke="#2B1416" stroke-width="2"/></svg>
+            <span><b>핸드드립 원두 200g</b><small>고소하고 산미가 적은 맛<br>오늘 주문하면 내일 도착</small></span>
+          </div>
+          <button class="pill-btn bd-add" data-add><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>장바구니에 담기</button>
+        </div>
+        <div class="bd-view" data-view="2" hidden>
+          <div class="top">장바구니<span class="bd-n">0개</span></div>
+          <ul class="bd-cart"></ul>
+          <p class="bd-empty">아직 담은 게 없어요</p>
+        </div>
+        <div class="bd-tabs" role="tablist" aria-label="아래 탭">
+          <button role="tab" aria-selected="true" data-tab="0"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 10L11 3.5l7.5 6.5v8.5h-5v-5h-5v5h-5z"/></svg>홈</button>
+          <button role="tab" aria-selected="false" data-tab="1" tabindex="-1"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M11 18.5S3.5 14 3.5 8.6A3.9 3.9 0 0 1 11 6.8a3.9 3.9 0 0 1 7.5 1.8C18.5 14 11 18.5 11 18.5z"/></svg>찜</button>
+          <button role="tab" aria-selected="false" data-tab="2" tabindex="-1" aria-describedby="bd-count"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7.5h14l-1.6 10.5H5.6z"/><path d="M8 7.5V6a3 3 0 0 1 6 0v1.5"/></svg>장바구니<span class="bd-badge" id="bd-count" aria-label="새로 담은 상품 0개">0</span></button>
+          <button role="tab" aria-selected="false" data-tab="3" tabindex="-1"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="8" r="3.6"/><path d="M4 18.5c1.2-3.6 3.8-5 7-5s5.8 1.4 7 5"/></svg>마이</button>
+        </div>
+      </div>
+      <span class="hint">담기를 눌러 보세요</span>
+    </div>
+    <div class="say"><p>장바구니 아이콘 위에 담은 개수를 배지 숫자로 보여 주고, 장바구니를 열면 지워 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 4 Inline message -->
+  <section class="item rv" id="inline">
+    <div class="num">04 / 06</div>
+    <h2 class="disp">Inline message<span class="kr">인라인 메시지</span></h2>
+    <p class="what">틀린 그 자리에서 바로 알려요</p>
+    <p class="when">입력 오류, 도움말 · 회원가입, 결제 폼</p>
+    <div class="stage p-lav">
+      <div class="screen in err" id="in">
+        <div class="top">회원가입<span>1 / 2</span></div>
+        <label class="in-l" for="in-mail">이메일</label>
+        <div class="in-f"><input id="in-mail" type="email" value="hello@exam" autocomplete="off" spellcheck="false" aria-describedby="in-msg" aria-invalid="true"><span class="st" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="#2B1416" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2l2.2 2.1 4.8-4.8"/></svg></span></div>
+        <p class="in-msg" id="in-msg" aria-live="polite"><span class="ic" aria-hidden="true"></span><span class="a">이메일 형식을 확인해 주세요</span><span class="b">좋아요, 쓸 수 있는 이메일이에요</span></p>
+        <button class="in-sug" data-sug><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>hello@example.com 으로 고치기</button>
+        <div class="in-pw"><span class="in-l">비밀번호</span><div class="fake" aria-label="비밀번호 입력됨">••••••••</div></div>
+        <button class="pill-btn in-next" aria-disabled="true">다음</button>
+      </div>
+      <span class="hint">고치기를 누르거나 직접 써 보세요</span>
+    </div>
+    <div class="say"><p>이메일 형식이 틀리면 입력칸 바로 아래에 인라인 메시지로 알려 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 5 Popover -->
+  <section class="item rv" id="popover">
+    <div class="num">05 / 06</div>
+    <h2 class="disp">Popover<span class="kr">팝오버</span></h2>
+    <p class="what">누른 자리에서 열리는 작은 창</p>
+    <p class="when">더보기 메뉴, 짧은 설명 · 목록, 사진 앱</p>
+    <div class="stage p-lime">
+      <div class="screen po open" id="po">
+        <div class="top">사진 앨범<span>3개</span></div>
+        <ul class="po-list">
+          <li><div><span class="th"><svg viewBox="0 0 46 46"><rect width="46" height="46" fill="#D9D0F7"/><circle cx="33" cy="14" r="5.5" fill="#F3E7A8" stroke="#2B1416" stroke-width="2"/><path d="M0 46l14-17 9 9 8-6 15 14z" fill="#fff" stroke="#2B1416" stroke-width="2" stroke-linejoin="round"/></svg></span><span class="tx"><b><span>주말 산책</span></b><small>사진 18장</small></span><button class="po-more" aria-haspopup="menu" aria-expanded="false" aria-label="주말 산책 더보기"><svg viewBox="0 0 18 18" fill="currentColor"><circle cx="4" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/><circle cx="14" cy="9" r="1.6"/></svg></button></div></li>
+          <li class="act"><div><span class="th"><svg viewBox="0 0 46 46"><rect width="46" height="46" fill="#C9DEC2"/><path d="M0 28q6-5 11.5 0t11.5 0 11.5 0 11.5 0v18H0z" fill="#fff" stroke="#2B1416" stroke-width="2"/><circle cx="14" cy="14" r="5" fill="#F3E7A8" stroke="#2B1416" stroke-width="2"/></svg></span><span class="tx"><b><span>바다 여행</span></b><small>사진 31장</small></span><button class="po-more" aria-haspopup="menu" aria-expanded="true" aria-label="바다 여행 더보기"><svg viewBox="0 0 18 18" fill="currentColor"><circle cx="4" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/><circle cx="14" cy="9" r="1.6"/></svg></button></div></li>
+          <li><div><span class="th"><svg viewBox="0 0 46 46"><rect width="46" height="46" fill="#F3E7A8"/><ellipse cx="23" cy="30" rx="15" ry="5" fill="#fff" stroke="#2B1416" stroke-width="2"/><path d="M10 27c1-8 6-12 13-12s12 4 13 12" fill="#DDE78E" stroke="#2B1416" stroke-width="2" stroke-linejoin="round"/></svg></span><span class="tx"><b><span>맛집 기록</span></b><small>사진 24장</small></span><button class="po-more" aria-haspopup="menu" aria-expanded="false" aria-label="맛집 기록 더보기"><svg viewBox="0 0 18 18" fill="currentColor"><circle cx="4" cy="9" r="1.6"/><circle cx="9" cy="9" r="1.6"/><circle cx="14" cy="9" r="1.6"/></svg></button></div></li>
+        </ul>
+        <div class="po-pop on" role="menu" aria-label="앨범 메뉴">
+          <button role="menuitem" data-a="rename"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 13l.6-3L10.5 3l2.5 2.5L6 12.4z"/></svg>이름 바꾸기</button>
+          <button role="menuitem" data-a="share"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V2.5M5 5l3-3 3 3M3 8.5V13h10V8.5"/></svg>공유하기</button>
+          <button role="menuitem" data-a="del" class="dl"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.7 9h5.6l.7-9"/></svg>삭제</button>
+        </div>
+      </div>
+      <span class="hint">⋯이나 메뉴를 눌러 보세요</span>
+    </div>
+    <div class="say"><p>목록의 ⋯ 버튼을 누르면 그 자리에 팝오버로 이름 바꾸기, 공유, 삭제 메뉴를 보여 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 6 Push -->
+  <section class="item rv" id="push">
+    <div class="num">06 / 06</div>
+    <h2 class="disp">Push<span class="kr">푸시 알림</span></h2>
+    <p class="what">앱을 닫아도 오는 알림</p>
+    <p class="when">배송 출발, 예약 하루 전 · 잠금 화면에 떠요</p>
+    <div class="stage p-butter">
+      <div class="screen pu" id="pu">
+        <div class="pu-lock" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg></div>
+        <div class="pu-date">11월 23일 월요일</div>
+        <div class="pu-time" aria-label="오전 9시 41분">9:41</div>
+        <div class="pu-stack" aria-live="polite">
+          <button class="pu-n new" aria-expanded="false"><span class="h"><i style="background:var(--lime)"><svg viewBox="0 0 12 12" fill="none" stroke="#2B1416" stroke-width="1.5" stroke-linejoin="round"><path d="M1.5 4l4.5-2.5L10.5 4v4.5L6 11 1.5 8.5z"/><path d="M1.5 4L6 6.5 10.5 4M6 6.5V11"/></svg></i>배송 출발<time>지금</time></span><p>주문한 원두가 출발했어요. 오늘 18시 전에 도착해요.</p><span class="x"><span><b>배송 조회</b></span></span></button>
+          <button class="pu-n" aria-expanded="false"><span class="h"><i style="background:var(--lav)"><svg viewBox="0 0 12 12" fill="none" stroke="#2B1416" stroke-width="1.5"><rect x="1.5" y="2.5" width="9" height="8" rx="2"/><path d="M1.5 5h9M4 1.2v2M8 1.2v2"/></svg></i>예약 알림<time>8:00</time></span><p>내일 오후 3시, 미용실 예약이 있어요.</p><span class="x"><span><b>예약 보기</b></span></span></button>
+        </div>
+        <div class="pu-foot"><small>앱은 닫혀 있어요</small><button class="pill-btn" data-send><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11.5V7a4 4 0 0 1 8 0v4.5l1 1.5H3z"/><path d="M6.5 14.5a1.6 1.6 0 0 0 3 0"/></svg><span>알림 보내 보기</span></button></div>
+      </div>
+      <span class="hint">눌러 보세요</span>
+    </div>
+    <div class="say"><p>배송이 출발하면 앱을 닫아도 푸시 알림이 오게 해 줘. 처음엔 알림을 허용할지 먼저 물어봐 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- All in one sentence -->
+  <h3 class="sec-h">한 문장으로 시키기</h3>
+  <section class="rv">
+    <h2 class="disp" style="font-size:clamp(40px,11vw,50px)">Say it<br>like <span class="v">this</span>.<span class="kr">이렇게 말해요</span></h2>
+    <div class="prompt">
+      <p class="bubble" id="all" data-type>저장하면 토스트로 "저장했어요"를 잠깐 보여 주고, 인터넷이 끊기면 위에 배너를 띄워 줘. 입력이 틀리면 칸 바로 아래 인라인 메시지로 알려 주고, 새 소식은 배지 숫자로 보여 줘.</p>
+      <div class="row"><small>ChatGPT · Claude 어디든 돼요</small><button class="copy" data-copy="#all"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>문장 복사</span></button></div>
+    </div>
+    <ol class="steps">
+      <li>위 문장을 복사해요.</li>
+      <li>AI 채팅창에 붙여 넣고, 앞에 "○○ 앱 화면 만들어 줘."를 붙여요.</li>
+      <li>필요한 알림만 남겨요. 메뉴가 있다면 "⋯ 누르면 팝오버로"를 더해요.</li>
+    </ol>
+    <p class="note">결과가 이상하면 알림 하나씩 따로 시켜 보세요. "토스트만 먼저 넣어 줘."처럼요.</p>
+  </section>
+
+  <footer class="foot rv">
+    <img class="bud" src="../assets/logo-bubble.svg" alt="">
+    <p>궁금한 건 DM으로 편하게 물어봐 주세요</p>
+    <a class="ig" href="https://www.instagram.com/ai_masterin30days/" rel="noopener">@ai_masterin30days 보러 가기</a>
+    <p class="meta">그림과 화면은 모두 직접 그렸어요 · 2026.11</p>
+  </footer>
+</main>
+
+<script src="../assets/guide.js"></script>
+<script>
+{
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 1 Toast: show, count down 3 s, slide away
+  const to = document.getElementById('to'), toastEl = to.querySelector('.to-toast'), sec = toastEl.querySelector('.sec');
+  let tTimer, tTick;
+  to.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+    clearTimeout(tTimer); clearInterval(tTick); to.classList.remove('gone');
+    toastEl.querySelector('.m').textContent = b.dataset.t;
+    toastEl.classList.remove('on'); void toastEl.offsetWidth; toastEl.classList.add('on');
+    let n = 3; sec.textContent = n;
+    tTick = setInterval(() => { n--; sec.textContent = Math.max(n, 1); }, 1000);
+    tTimer = setTimeout(() => { clearInterval(tTick); toastEl.classList.remove('on'); to.classList.add('gone'); setTimeout(() => to.classList.remove('gone'), 2200); }, 2700);
+  }));
+
+  // 2 Banner: offline -> reconnect -> banner folds away, new mail drops in
+  const ba = document.getElementById('ba'), wifi = ba.querySelector('.ba-wifi'), baMsg = ba.querySelector('.ba-banner .m'), mail = ba.querySelector('li.new');
+  let bTimer;
+  const online = on => {
+    clearTimeout(bTimer);
+    ba.classList.toggle('off', !on); ba.classList.remove('fold'); wifi.setAttribute('aria-pressed', on);
+    baMsg.textContent = on ? '다시 연결됐어요' : '연결이 끊겼어요';
+    if (on) { setTimeout(() => mail.classList.add('in'), 350); bTimer = setTimeout(() => ba.classList.add('fold'), 2000); }
+    else mail.classList.remove('in');
+  };
+  ba.querySelector('[data-retry]').addEventListener('click', () => online(true));
+  wifi.addEventListener('click', () => online(ba.classList.contains('off')));
+
+  // 3 Badge: fly a dot into the cart, bump the number; opening the cart clears it
+  const bd = document.getElementById('bd'), badge = bd.querySelector('.bd-badge'), tabs = [...bd.querySelectorAll('[role=tab]')], cart = bd.querySelector('.bd-cart');
+  const bag = '<svg viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#F3E7A8"/><path d="M9 9h12l-1 14H10z" fill="#fff" stroke="#2B1416" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9l1.5-3h9L21 9" fill="#D9D0F7" stroke="#2B1416" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+  let fresh = 0, total = 0;
+  const setBadge = () => { badge.textContent = fresh > 9 ? '9+' : fresh; badge.classList.toggle('on', fresh > 0); badge.setAttribute('aria-label', `새로 담은 상품 ${fresh}개`); };
+  bd.querySelector('[data-add]').addEventListener('click', e => {
+    fresh++; total++;
+    const go = () => { setBadge(); badge.classList.remove('bump'); void badge.offsetWidth; badge.classList.add('bump'); };
+    if (calm) return go();
+    const base = bd.getBoundingClientRect(), a = e.currentTarget.getBoundingClientRect(), b = badge.getBoundingClientRect();
+    const dot = Object.assign(document.createElement('i'), {className: 'bd-fly'});
+    const x0 = a.left + a.width / 2 - base.left - 7, y0 = a.top + a.height / 2 - base.top - 7, x1 = b.left + b.width / 2 - base.left - 7, y1 = b.top + b.height / 2 - base.top - 7;
+    dot.style.left = x0 + 'px'; dot.style.top = y0 + 'px'; bd.append(dot);
+    dot.animate([{transform: 'scale(.6)'}, {transform: `translate(${(x1 - x0) * .55}px, ${(y1 - y0) * .2 - 40}px) scale(1.2)`, offset: .5}, {transform: `translate(${x1 - x0}px, ${y1 - y0}px) scale(.7)`}], {duration: 620, easing: 'cubic-bezier(.45,0,.3,1)'}).onfinish = () => { dot.remove(); go(); };
+  });
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const k = t.dataset.tab, show = k === '2' ? '2' : '0';
+    tabs.forEach(x => { x.setAttribute('aria-selected', x === t); x.tabIndex = x === t ? 0 : -1; });
+    bd.querySelectorAll('.bd-view').forEach(v => v.hidden = v.dataset.view !== show);
+    if (k === '2') {
+      cart.innerHTML = Array.from({length: Math.min(total, 3)}, (_, i) => `<li style="animation-delay:${i * 60}ms">${bag}핸드드립 원두 200g<span>1개</span></li>`).join('');
+      bd.querySelector('.bd-n').textContent = total + '개';
+      bd.querySelector('.bd-empty').hidden = total > 0;
+      bd.querySelector('.bd-empty').textContent = '아직 담은 게 없어요';
+      if (total > 3) cart.insertAdjacentHTML('beforeend', `<li style="justify-content:center;color:var(--mute)">외 ${total - 3}개 더</li>`);
+      fresh = 0; setBadge();
+    }
+  }));
+
+  // 4 Inline message: validate as you type, one-tap fix
+  const inS = document.getElementById('in'), mailIn = document.getElementById('in-mail');
+  const valid = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  const check = shake => {
+    const ok = valid(mailIn.value.trim());
+    const wasOk = inS.classList.contains('ok');
+    inS.classList.toggle('ok', ok); inS.classList.toggle('err', !ok);
+    mailIn.setAttribute('aria-invalid', !ok); inS.querySelector('.in-next').setAttribute('aria-disabled', !ok);
+    if (!ok && (wasOk || shake)) { inS.classList.remove('shake'); void inS.offsetWidth; inS.classList.add('shake'); }
+  };
+  mailIn.addEventListener('input', () => check(false));
+  mailIn.addEventListener('blur', () => check(true));
+  inS.querySelector('[data-sug]').addEventListener('click', () => {
+    const target = 'hello@example.com';
+    if (calm || !target.startsWith(mailIn.value)) { mailIn.value = target; return check(); }
+    const step = () => { mailIn.value = target.slice(0, mailIn.value.length + 1); check(); if (mailIn.value !== target) setTimeout(step, 70); };
+    step();
+  });
+  inS.querySelector('.in-next').addEventListener('click', e => { if (!valid(mailIn.value.trim())) { check(true); mailIn.focus(); } else { e.currentTarget.textContent = '다음 단계로!'; setTimeout(() => e.currentTarget.textContent = '다음', 1400); } });
+
+  // 5 Popover: anchored to the tapped ⋯
+  const po = document.getElementById('po'), pop = po.querySelector('.po-pop'), mores = [...po.querySelectorAll('.po-more')];
+  const names = ['바다 여행', '여름 바다', '파도 소리'];
+  let cur = mores[1];
+  const placeAt = btn => { const s = po.getBoundingClientRect(), b = btn.getBoundingClientRect(), h = pop.offsetHeight;
+    const up = b.bottom - s.top + 8 + h > s.height - 6; pop.classList.toggle('up', up);
+    pop.style.top = (up ? b.top - s.top - h - 8 : b.bottom - s.top + 8) + 'px'; };
+  const openPop = (btn, on) => {
+    mores.forEach(m => m.setAttribute('aria-expanded', m === btn && on));
+    po.querySelectorAll('.po-list li').forEach(li => li.classList.toggle('act', on && li.contains(btn)));
+    po.classList.toggle('open', on); pop.classList.toggle('on', on);
+    if (on) { cur = btn; placeAt(btn); }
+  };
+  requestAnimationFrame(() => placeAt(cur));
+  addEventListener('resize', () => placeAt(cur));
+  mores.forEach(m => m.addEventListener('click', e => { e.stopPropagation(); const on = !(m === cur && pop.classList.contains('on')); openPop(m, on); if (on) pop.querySelector('button').focus({preventScroll: true}); }));
+  pop.querySelectorAll('button').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const li = cur.closest('li'), title = li.querySelector('b span'), meta = li.querySelector('small');
+    if (b.dataset.a === 'rename') { const i = (names.indexOf(title.textContent) + 1) % names.length; title.textContent = names[i < 0 ? 0 : i]; title.classList.remove('swap'); void title.offsetWidth; title.classList.add('swap'); }
+    if (b.dataset.a === 'share') { const em = meta.querySelector('em'); em ? em.remove() : meta.insertAdjacentHTML('beforeend', '<em>공유됨</em>'); }
+    if (b.dataset.a === 'del') { li.classList.add('del'); setTimeout(() => li.classList.remove('del'), 2000); }
+    openPop(cur, false); cur.focus({preventScroll: true});
+  }));
+  pop.addEventListener('keydown', e => { if (e.key === 'Escape') { openPop(cur, false); cur.focus(); } });
+  document.addEventListener('click', e => { if (!pop.contains(e.target)) openPop(cur, false); });
+
+  // 6 Push: wake the lock screen, drop a notification, tap to expand
+  const pu = document.getElementById('pu'), fresh2 = pu.querySelector('.pu-n.new'), send = pu.querySelector('[data-send]');
+  send.addEventListener('click', () => {
+    const on = !fresh2.classList.contains('in');
+    fresh2.classList.toggle('in', on); pu.classList.toggle('wake', on);
+    send.querySelector('span').textContent = on ? '처음으로' : '알림 보내 보기';
+    if (!on) fresh2.setAttribute('aria-expanded', false);
+  });
+  pu.querySelectorAll('.pu-n').forEach(n => n.addEventListener('click', () => n.setAttribute('aria-expanded', n.getAttribute('aria-expanded') !== 'true')));
+}
+</script>
+</body>
+</html>

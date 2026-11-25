@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UI 이름 6개 · ai_masterin30days</title>
+<meta name="description" content="토글, 탭, 아코디언, 툴팁, 캐러셀, 모달. 이름 6개만 알면 AI한테 한 문장으로 시킬 수 있어요.">
+<meta name="theme-color" content="#F7F4EE">
+<link rel="icon" href="../assets/logo-bubble.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="../assets/guide.css">
+<style>
+  /* ---- Page-specific live demos ---- */
+  /* 1 Toggle: dark mode floods the whole screen */
+  .tg-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-top: 1px solid var(--line); font: 600 15px/1 var(--ko); transition: border-color .45s; }
+  .tg-row small { display: block; margin-top: 5px; font-size: 12px; font-weight: 500; color: var(--mute); }
+  .sw { width: 52px; height: 30px; border-radius: 99px; background: #2B141629; position: relative; flex: none; transition: background .3s var(--ease); }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--white); box-shadow: 0 2px 6px #2B141640; transition: transform .45s var(--spring); }
+  .sw[aria-checked="true"] { background: var(--violet); }
+  .sw[aria-checked="true"]::after { transform: translateX(22px); }
+  .screen.dark { background: var(--plum); color: var(--cream); }
+  .screen.dark .tg-row { border-color: #F7F4EE22; }
+  .screen.dark .top span, .screen.dark .tg-row small { color: #F7F4EE99; }
+
+  /* 2 Tabs: each tab swaps its own colour world */
+  .tabs { display: flex; position: relative; background: var(--cream); border-radius: 99px; padding: 4px; }
+  .tabs button { flex: 1; position: relative; z-index: 1; padding: 9px 0; font: 700 14px/1 var(--ko); color: var(--mute); transition: color .3s; }
+  .tabs button[aria-selected="true"] { color: var(--plum); }
+  .tabs .ind { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 3); border-radius: 99px; background: var(--white); box-shadow: 0 3px 10px -4px #2B141659; transition: transform .45s var(--spring); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .tiles i { aspect-ratio: 1; border-radius: 12px; display: grid; place-items: center; transition: background .4s var(--ease), transform .45s var(--spring); }
+  .tiles i svg { width: 20px; height: 20px; opacity: 0; transform: scale(.5); transition: opacity .3s, transform .4s var(--spring); }
+  .tw-0 .tiles i:nth-child(3n+1) { background: var(--lav); } .tw-0 .tiles i:nth-child(3n+2) { background: var(--butter); } .tw-0 .tiles i:nth-child(3n) { background: var(--sage); }
+  .tw-1 .tiles i { background: var(--lav); } .tw-1 .tiles i:nth-child(odd) { transform: scale(.94); }
+  .tw-2 .tiles i { background: var(--sage); } .tw-2 .tiles i svg { opacity: 1; transform: none; }
+
+  /* 3 Accordion: the open item turns violet and pushes the rest down */
+  .acc { border-radius: 14px; margin-top: 8px; background: var(--cream); transition: background .35s var(--ease), color .35s; }
+  .acc > button { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px; font: 700 14.5px/1.3 var(--ko); text-align: left; }
+  .acc > button svg { width: 18px; height: 18px; transition: transform .45s var(--spring); flex: none; }
+  .acc .body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
+  .acc .body > div { overflow: hidden; }
+  .acc .body p { padding: 0 14px 14px; font-size: 14px; }
+  .acc.open { background: var(--violet); color: var(--white); }
+  .acc.open > button svg { transform: rotate(180deg); }
+  .acc.open .body { grid-template-rows: 1fr; }
+
+  /* 4 Tooltip */
+  .fld-l { display: flex; align-items: center; gap: 6px; font: 700 13px/1 var(--ko); color: var(--mute); position: relative; }
+  .info { width: 26px; height: 26px; margin: -6px 0; border-radius: 50%; display: grid; place-items: center; }
+  .info i { width: 17px; height: 17px; border-radius: 50%; border: 1.8px solid var(--plum); display: grid; place-items: center; font: 800 10.5px/1 var(--disp); color: var(--plum); font-style: normal; transition: background .2s, color .2s; }
+  .info[aria-expanded="true"] i { background: var(--plum); color: var(--white); }
+  .tip { position: absolute; left: 0; bottom: calc(100% + 12px); width: max-content; max-width: 230px; background: var(--plum); color: var(--white); border-radius: 12px; padding: 10px 12px; font: 600 13px/1.45 var(--ko); opacity: 0; transform: translateY(6px) scale(.9); transform-origin: 66px 100%; transition: opacity .25s, transform .4s var(--spring); pointer-events: none; }
+  .tip::after { content: ""; position: absolute; left: 60px; top: 100%; border: 7px solid transparent; border-top-color: var(--plum); }
+  .tip.on { opacity: 1; transform: none; }
+  .fld { margin-top: 9px; border: 1.5px solid var(--plum); border-radius: 12px; padding: 12px 14px; font: 600 15px/1 var(--ko); display: flex; justify-content: space-between; }
+  .fld svg { width: 18px; height: 18px; }
+  .fld.ph { border-color: var(--line); color: #2B141666; font-weight: 500; margin-top: 10px; }
+  .tip-wrap { padding-top: 64px; }
+
+  /* 5 Carousel */
+  .car { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -18px; padding: 0 18px 4px; scrollbar-width: none; }
+  .car::-webkit-scrollbar { display: none; }
+  .car figure { flex: 0 0 78%; scroll-snap-align: center; border-radius: 16px; overflow: hidden; background: var(--cream); }
+  .car figure svg { width: 100%; height: auto; }
+  .car figcaption { padding: 10px 12px; font: 700 14px/1 var(--ko); display: flex; justify-content: space-between; }
+  .car figcaption span { font-weight: 500; color: var(--mute); font-size: 12.5px; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+  .dots i { width: 7px; height: 7px; border-radius: 99px; background: #2B141633; transition: width .35s var(--spring), background .3s; }
+  .dots i.on { width: 20px; background: var(--plum); }
+
+  /* 6 Modal */
+  .ph-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .ph-grid i { aspect-ratio: 1; border-radius: 12px; position: relative; transition: opacity .4s, transform .5s var(--spring); }
+  .ph-grid i:nth-child(1) { background: var(--lav); } .ph-grid i:nth-child(2) { background: var(--lime); } .ph-grid i:nth-child(3) { background: var(--butter); }
+  .ph-grid i::after { content: ""; position: absolute; right: 6px; top: 6px; width: 18px; height: 18px; border-radius: 50%; background: var(--plum) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.3l2.2 2.1 4.6-4.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; }
+  .ph-grid.gone i { opacity: 0; transform: scale(.6); }
+  .bar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font: 600 14px/1 var(--ko); color: var(--mute); }
+  .del { display: inline-flex; align-items: center; gap: 6px; background: var(--plum); color: var(--white); border-radius: 99px; padding: 10px 15px; font: 700 13.5px/1 var(--ko); transition: transform .25s var(--spring); }
+  .del:active { transform: scale(.94); }
+  .del svg { width: 15px; height: 15px; }
+  .scrim { position: absolute; inset: 0; background: #2B141659; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .3s; display: grid; place-items: center; padding: 16px; }
+  .scrim.on { opacity: 1; pointer-events: auto; }
+  .dlg { background: var(--white); border-radius: 20px; padding: 20px 18px 16px; width: 100%; text-align: center; transform: translateY(16px) scale(.9); transition: transform .45s var(--spring); }
+  .scrim.on .dlg { transform: none; }
+  .dlg .t { font: 700 16px/1.3 var(--ko); } .dlg .s { font-size: 13px; color: var(--mute); margin-top: 6px; }
+  .dlg .b { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .dlg .b button { border-radius: 99px; padding: 11px 0; font: 700 14px/1 var(--ko); background: var(--cream); }
+  .dlg .b .ok { background: var(--plum); color: var(--white); }
+  .done-msg { position: absolute; inset: auto 16px 16px; text-align: center; background: var(--sage); border-radius: 12px; padding: 12px; font: 700 14px/1 var(--ko); opacity: 0; transform: translateY(8px); transition: opacity .3s, transform .4s var(--spring); }
+  .done-msg.on { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <div class="brand"><img src="../assets/logo-bubble.svg" alt="">ai_masterin30days<span>무료 가이드</span></div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="eyebrow"><i></i>UI × AI 가이드</span>
+    <h1 class="disp">Call it by<span class="in">its <span class="v">name</span>.<span class="kr">이름</span></span></h1>
+    <p class="lead">"그 슬라이드 되는 거요" 하면 AI도 헷갈려요.<br>
+      토글, 탭, 아코디언, 툴팁, 캐러셀, 모달.<br>
+      <b>이름 6개만 알면 한 문장으로 시킬 수 있어요.</b></p>
+    <nav class="fan" aria-label="6개 바로 가기">
+      <a class="chip" href="#toggle"><span class="g"><span class="mini-tg"></span></span>Toggle<small>토글</small></a>
+      <a class="chip" href="#tabs"><span class="g"><svg width="34" height="20" viewBox="0 0 34 20"><rect x="1" y="3" width="32" height="14" rx="7" fill="#F7F4EE"/><rect x="2.5" y="4.5" width="11" height="11" rx="5.5" fill="#D9D0F7" stroke="#2B1416" stroke-width="1.5"/></svg></span>Tabs<small>탭</small></a>
+      <a class="chip" href="#accordion"><span class="g"><svg width="30" height="26" viewBox="0 0 30 26" fill="none" stroke="#2B1416" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="1" width="28" height="9" rx="4" fill="#8C6BE6" stroke="none"/><path d="M5 15h20M5 20h14"/></svg></span>Accordion<small>아코디언</small></a>
+      <a class="chip" href="#tooltip"><span class="g"><svg width="30" height="28" viewBox="0 0 30 28"><path d="M3 2h24a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H18l-3 4-3-4H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#2B1416"/><circle cx="15" cy="24" r="3.4" fill="#fff" stroke="#2B1416" stroke-width="1.6"/></svg></span>Tooltip<small>툴팁</small></a>
+      <a class="chip" href="#carousel"><span class="g"><svg width="36" height="22" viewBox="0 0 36 22"><rect x="0" y="4" width="6" height="14" rx="3" fill="#DDE78E"/><rect x="9" y="1" width="18" height="20" rx="5" fill="#F3E7A8" stroke="#2B1416" stroke-width="1.6"/><rect x="30" y="4" width="6" height="14" rx="3" fill="#C9DEC2"/></svg></span>Carousel<small>캐러셀</small></a>
+      <a class="chip" href="#modal"><span class="g"><svg width="30" height="26" viewBox="0 0 30 26"><rect x="1" y="1" width="28" height="24" rx="5" fill="#2B141626"/><rect x="5" y="6" width="20" height="14" rx="4" fill="#fff" stroke="#2B1416" stroke-width="1.6"/></svg></span>Modal<small>모달</small></a>
+    </nav>
+  </header>
+
+  <h3 class="sec-h">직접 눌러 보세요 · 6개</h3>
+
+  <!-- 1 Toggle -->
+  <section class="item rv" id="toggle">
+    <div class="num">01 / 06</div>
+    <h2 class="disp">Toggle<span class="kr">토글</span></h2>
+    <p class="what">켜고 끄는 동그란 스위치</p>
+    <p class="when">누르는 순간 바로 바뀌어요 · 다크 모드, 알림 켜기</p>
+    <div class="stage p-lime">
+      <div class="screen" id="tg-screen">
+        <div class="top">설정<span>화면</span></div>
+        <div class="tg-row"><div>다크 모드<small>화면을 어둡게</small></div><button class="sw" role="switch" aria-checked="false" aria-label="다크 모드" data-dark></button></div>
+        <div class="tg-row"><div>알림<small>새 소식 받기</small></div><button class="sw" role="switch" aria-checked="true" aria-label="알림"></button></div>
+      </div>
+      <span class="hint">눌러 보세요</span>
+    </div>
+    <div class="say"><p>설정 화면에 다크 모드 토글을 넣어 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 2 Tabs -->
+  <section class="item rv" id="tabs">
+    <div class="num">02 / 06</div>
+    <h2 class="disp">Tabs<span class="kr">탭</span></h2>
+    <p class="what">위에서 골라 바꾸는 메뉴</p>
+    <p class="when">한 화면에서 내용만 바꿀 때 · 메뉴, 카테고리</p>
+    <div class="stage p-butter">
+      <div class="screen tw-0" id="tb-screen">
+        <div class="tabs" role="tablist"><span class="ind"></span>
+          <button role="tab" aria-selected="true">전체</button><button role="tab" aria-selected="false">사진</button><button role="tab" aria-selected="false">영상</button>
+        </div>
+        <div class="tiles" aria-hidden="true">
+          <i><svg viewBox="0 0 20 20"><path d="M7 5l9 5-9 5z" fill="#2B1416"/></svg></i><i><svg viewBox="0 0 20 20"><path d="M7 5l9 5-9 5z" fill="#2B1416"/></svg></i><i><svg viewBox="0 0 20 20"><path d="M7 5l9 5-9 5z" fill="#2B1416"/></svg></i>
+          <i><svg viewBox="0 0 20 20"><path d="M7 5l9 5-9 5z" fill="#2B1416"/></svg></i><i><svg viewBox="0 0 20 20"><path d="M7 5l9 5-9 5z" fill="#2B1416"/></svg></i><i><svg viewBox="0 0 20 20"><path d="M7 5l9 5-9 5z" fill="#2B1416"/></svg></i>
+        </div>
+      </div>
+      <span class="hint">눌러 보세요</span>
+    </div>
+    <div class="say"><p>메뉴를 전체 · 사진 · 영상 탭으로 나눠 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 3 Accordion -->
+  <section class="item rv" id="accordion">
+    <div class="num">03 / 06</div>
+    <h2 class="disp">Accordion<span class="kr">아코디언</span></h2>
+    <p class="what">누르면 아래로 펼쳐지는 목록</p>
+    <p class="when">긴 내용을 접어 둘 때 · 자주 묻는 질문, 상세 정보</p>
+    <div class="stage p-sage">
+      <div class="screen">
+        <div class="top">자주 묻는 질문<span>3개</span></div>
+        <div class="acc open"><button aria-expanded="true">배송은 얼마나 걸려요?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="body"><div><p>주문하고 2~3일 안에 도착해요.</p></div></div></div>
+        <div class="acc"><button aria-expanded="false">반품은 언제까지 돼요?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="body"><div><p>받은 날부터 7일 안에 신청하면 돼요.</p></div></div></div>
+        <div class="acc"><button aria-expanded="false">주소를 바꿀 수 있어요?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><div class="body"><div><p>배송이 시작되기 전까지 바꿀 수 있어요.</p></div></div></div>
+      </div>
+      <span class="hint">눌러 보세요</span>
+    </div>
+    <div class="say"><p>자주 묻는 질문은 아코디언으로 접어 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 4 Tooltip -->
+  <section class="item rv" id="tooltip">
+    <div class="num">04 / 06</div>
+    <h2 class="disp">Tooltip<span class="kr">툴팁</span></h2>
+    <p class="what">ⓘ를 누르면 뜨는 짧은 설명</p>
+    <p class="when">낯선 말 하나를 알려 줄 때 · 입력 도움말</p>
+    <div class="stage p-lav">
+      <div class="screen">
+        <div class="top">프로필 만들기<span>1 / 2</span></div>
+        <div class="tip-wrap">
+          <div class="fld-l">닉네임<button class="info" aria-expanded="true" aria-label="닉네임 설명 보기"><i>i</i></button>
+            <div class="tip on" role="tooltip">다른 사람에게 보이는 이름이에요.<br>나중에 바꿀 수 있어요.</div></div>
+          <div class="fld">하늘고래<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#C9DEC2"/><path d="M4.6 8.2l2.2 2.1 4.4-4.5" fill="none" stroke="#2B1416" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="fld ph">나를 한 줄로 소개해 주세요</div>
+        </div>
+      </div>
+      <span class="hint">ⓘ를 눌러 닫아 보세요</span>
+    </div>
+    <div class="say"><p>닉네임 입력칸 옆에 툴팁으로 짧은 설명을 달아 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 5 Carousel -->
+  <section class="item rv" id="carousel">
+    <div class="num">05 / 06</div>
+    <h2 class="disp">Carousel<span class="kr">캐러셀</span></h2>
+    <p class="what">옆으로 넘겨 보는 카드</p>
+    <p class="when">여러 장을 한 자리에서 보여 줄 때 · 사진, 상품, 후기</p>
+    <div class="stage p-lime">
+      <div class="screen">
+        <div class="top">여행 앨범<span>3개 앨범</span></div>
+        <div class="car" tabindex="0" aria-label="앨범 캐러셀">
+          <figure><svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#D9D0F7"/><circle cx="150" cy="38" r="16" fill="#F3E7A8" stroke="#2B1416" stroke-width="2.5"/><path d="M0 120l55-58 35 34 30-24 80 48z" fill="#fff" stroke="#2B1416" stroke-width="2.5" stroke-linejoin="round"/></svg><figcaption>산<span>24장</span></figcaption></figure>
+          <figure><svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#C9DEC2"/><path d="M0 78q25-14 50 0t50 0 50 0 50 0v42H0z" fill="#fff" stroke="#2B1416" stroke-width="2.5"/><path d="M0 98q25-12 50 0t50 0 50 0 50 0" fill="none" stroke="#2B1416" stroke-width="2.5"/><circle cx="60" cy="40" r="14" fill="#F3E7A8" stroke="#2B1416" stroke-width="2.5"/></svg><figcaption>바다<span>31장</span></figcaption></figure>
+          <figure><svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#F3E7A8"/><rect x="40" y="44" width="40" height="76" rx="4" fill="#fff" stroke="#2B1416" stroke-width="2.5"/><rect x="92" y="24" width="48" height="96" rx="4" fill="#D9D0F7" stroke="#2B1416" stroke-width="2.5"/><rect x="150" y="60" width="32" height="60" rx="4" fill="#fff" stroke="#2B1416" stroke-width="2.5"/></svg><figcaption>도시<span>18장</span></figcaption></figure>
+        </div>
+        <div class="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+      </div>
+      <span class="hint">옆으로 넘겨 보세요</span>
+    </div>
+    <div class="say"><p>후기 카드는 캐러셀로 옆으로 넘기게 해 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- 6 Modal -->
+  <section class="item rv" id="modal">
+    <div class="num">06 / 06</div>
+    <h2 class="disp">Modal<span class="kr">모달</span></h2>
+    <p class="what">화면 위에 뜨는 확인 창</p>
+    <p class="when">꼭 답을 받아야 할 때 · 삭제 확인, 중요한 선택</p>
+    <div class="stage p-butter">
+      <div class="screen" id="md-screen">
+        <div class="top">사진<span>3장 선택됨</span></div>
+        <div class="ph-grid" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="bar">3장<button class="del" data-open><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>삭제</button></div>
+        <div class="scrim" role="dialog" aria-modal="true" aria-label="삭제 확인">
+          <div class="dlg"><div class="t">사진 3장을 삭제할까요?</div><div class="s">삭제하면 되돌릴 수 없어요.</div>
+            <div class="b"><button data-cancel>취소</button><button class="ok" data-ok>삭제</button></div></div>
+        </div>
+        <div class="done-msg" role="status">사진 3장을 삭제했어요</div>
+      </div>
+      <span class="hint">삭제를 눌러 보세요</span>
+    </div>
+    <div class="say"><p>삭제 버튼을 누르면 모달로 한 번 더 물어봐 줘.</p><button class="copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>복사</span></button></div>
+  </section>
+
+  <!-- All in one sentence -->
+  <h3 class="sec-h">한 문장으로 시키기</h3>
+  <section class="rv">
+    <h2 class="disp" style="font-size:clamp(40px,11vw,50px)">Say it<br>like <span class="v">this</span>.<span class="kr">이렇게 말해요</span></h2>
+    <div class="prompt">
+      <p class="bubble" id="all" data-type>설정에 다크 모드 토글을 넣고, 메뉴는 탭으로 나눠 줘. 자주 묻는 질문은 아코디언으로 접고, 사진은 캐러셀로 넘겨. 삭제 전엔 모달로 한 번 더 물어봐 줘.</p>
+      <div class="row"><small>ChatGPT · Claude 어디든 돼요</small><button class="copy" data-copy="#all"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>문장 복사</span></button></div>
+    </div>
+    <ol class="steps">
+      <li>위 문장을 복사해요.</li>
+      <li>AI 채팅창에 붙여 넣고, 앞에 "○○ 앱 화면 만들어 줘."를 붙여요.</li>
+      <li>내 서비스에 맞게 단어만 바꿔요. 다크 모드 → 알림, 사진 → 상품처럼요.</li>
+    </ol>
+    <p class="note">결과가 이상하면 이름 하나씩 따로 시켜 보세요. "토글만 먼저 넣어 줘."처럼요.</p>
+  </section>
+
+  <footer class="foot rv">
+    <img class="bud" src="../assets/logo-bubble.svg" alt="">
+    <p>궁금한 건 DM으로 편하게 물어봐 주세요</p>
+    <a class="ig" href="https://www.instagram.com/ai_masterin30days/" rel="noopener">@ai_masterin30days 보러 가기</a>
+    <p class="meta">그림과 화면은 모두 직접 그렸어요 · 2026.11</p>
+  </footer>
+</main>
+
+<script src="../assets/guide.js"></script>
+<script>
+  // Toggle: dark mode floods the screen
+  document.querySelectorAll('.sw').forEach(s => s.addEventListener('click', () => {
+    const on = s.getAttribute('aria-checked') !== 'true'; s.setAttribute('aria-checked', on);
+    if (s.hasAttribute('data-dark')) document.getElementById('tg-screen').classList.toggle('dark', on);
+  }));
+  // Tabs: move indicator and swap colour world
+  const tb = document.getElementById('tb-screen');
+  tb.querySelectorAll('[role=tab]').forEach((b, i, all) => b.addEventListener('click', () => {
+    all.forEach(x => x.setAttribute('aria-selected', x === b));
+    tb.querySelector('.ind').style.transform = `translateX(${i * 100}%)`;
+    tb.className = 'screen tw-' + i;
+  }));
+  // Accordion: one open at a time
+  const accs = document.querySelectorAll('.acc');
+  accs.forEach(a => a.querySelector('button').addEventListener('click', () => {
+    const open = !a.classList.contains('open');
+    accs.forEach(x => { x.classList.remove('open'); x.querySelector('button').setAttribute('aria-expanded', false); });
+    if (open) { a.classList.add('open'); a.querySelector('button').setAttribute('aria-expanded', true); }
+  }));
+  // Tooltip
+  const info = document.querySelector('.info'), tip = document.querySelector('.tip');
+  info.addEventListener('click', () => { const on = !tip.classList.contains('on'); tip.classList.toggle('on', on); info.setAttribute('aria-expanded', on); });
+  // Carousel dots follow the scroll position
+  const car = document.querySelector('.car'), dots = document.querySelectorAll('.dots i');
+  car.addEventListener('scroll', () => { const i = Math.round(car.scrollLeft / (car.scrollWidth - car.clientWidth) * (dots.length - 1)); dots.forEach((d, k) => d.classList.toggle('on', k === i)); }, {passive: true});
+  // Modal: ask first, then delete, then reset the demo
+  const md = document.getElementById('md-screen'), scrim = md.querySelector('.scrim');
+  md.querySelector('[data-open]').addEventListener('click', () => { scrim.classList.add('on'); scrim.querySelector('[data-cancel]').focus({preventScroll: true}); });
+  md.querySelector('[data-cancel]').addEventListener('click', () => scrim.classList.remove('on'));
+  md.querySelector('[data-ok]').addEventListener('click', () => {
+    scrim.classList.remove('on'); md.querySelector('.ph-grid').classList.add('gone'); md.querySelector('.done-msg').classList.add('on');
+    setTimeout(() => { md.querySelector('.ph-grid').classList.remove('gone'); md.querySelector('.done-msg').classList.remove('on'); }, 2200);
+  });
+</script>
+</body>
+</html>
